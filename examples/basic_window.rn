@@ -1,31 +1,20 @@
 use raylib;
 
-const TITLE = [25]u8.{
-    b'r', b'a', b'y', b'l', b'i', b'b', b'-', b'k',
-    b'e', b'r', b'n', b' ', b'b', b'a', b's', b'i',
-    b'c', b' ', b'w', b'i', b'n', b'd', b'o', b'w',
-    0,
-};
-
-const MESSAGE = [25]u8.{
-    b'H', b'e', b'l', b'l', b'o', b' ', b'f', b'r',
-    b'o', b'm', b' ', b'K', b'e', b'r', b'n', b' ',
-    b'+', b' ', b'r', b'a', b'y', b'l', b'i', b'b',
-    0,
-};
+const TITLE = "raylib-kern basic window\0";
+const MESSAGE = "Hello from Kern + raylib\0";
 
 fn main() i32 {
-    raylib.init_window(800, 450, TITLE.[0 .. 25]);
+    raylib.init_window(800, 450, TITLE);
+    defer raylib.close_window();
     raylib.set_target_fps(60);
 
     while (!raylib.window_should_close()) {
         raylib.begin_drawing();
-        raylib.clear_background(raylib.RAYWHITE);
-        raylib.draw_text(MESSAGE.[0 .. 25], 190, 200, 20, raylib.DARKGRAY);
-        raylib.draw_fps(10, 10);
+            raylib.clear_background(raylib.RAYWHITE);
+            raylib.draw_text(MESSAGE, 190, 200, 20, raylib.DARKGRAY);
+            raylib.draw_fps(10, 10);
         raylib.end_drawing();
     }
 
-    raylib.close_window();
     return 0;
 }
