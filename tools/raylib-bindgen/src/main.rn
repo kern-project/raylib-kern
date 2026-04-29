@@ -90,6 +90,104 @@ fn sanitize_name(name: []u8) []u8 {
     return name;
 }
 
+fn enum_backing_type(name: []u8) []u8 {
+    if (name == "ConfigFlags" or name == "Gesture") {
+        return "u32";
+    }
+    return "i32";
+}
+
+fn enum_is_flags(name: []u8) bool {
+    return name == "ConfigFlags" or name == "Gesture";
+}
+
+fn enum_value_prefix(name: []u8) []u8 {
+    if (name == "ConfigFlags") return "FLAG_";
+    if (name == "TraceLogLevel") return "LOG_";
+    if (name == "KeyboardKey") return "KEY_";
+    if (name == "MouseButton") return "MOUSE_BUTTON_";
+    if (name == "MouseCursor") return "MOUSE_CURSOR_";
+    if (name == "GamepadButton") return "GAMEPAD_BUTTON_";
+    if (name == "GamepadAxis") return "GAMEPAD_AXIS_";
+    if (name == "MaterialMapIndex") return "MATERIAL_MAP_";
+    if (name == "ShaderLocationIndex") return "SHADER_LOC_";
+    if (name == "ShaderUniformDataType") return "SHADER_UNIFORM_";
+    if (name == "ShaderAttributeDataType") return "SHADER_ATTRIB_";
+    if (name == "PixelFormat") return "PIXELFORMAT_";
+    if (name == "TextureFilter") return "TEXTURE_FILTER_";
+    if (name == "TextureWrap") return "TEXTURE_WRAP_";
+    if (name == "CubemapLayout") return "CUBEMAP_LAYOUT_";
+    if (name == "FontType") return "FONT_";
+    if (name == "BlendMode") return "BLEND_";
+    if (name == "Gesture") return "GESTURE_";
+    if (name == "CameraMode") return "CAMERA_";
+    if (name == "CameraProjection") return "CAMERA_";
+    if (name == "NPatchLayout") return "NPATCH_";
+    return "";
+}
+
+fn enum_variant_name(enum_name: []u8, value_name: []u8) []u8 {
+    let prefix = enum_value_prefix(enum_name);
+    if (#prefix == 0) {
+        return value_name;
+    }
+    return match (value_name.strip_prefix(prefix)) {
+        .{ Some: rest } => rest,
+        .None => value_name,
+    };
+}
+
+fn public_enum_alias(name: []u8) []u8 {
+    if (name == "KeyboardKey") return "Key";
+    return name;
+}
+
+fn enum_name_for_value(value_name: []u8) []u8 {
+    if (value_name.starts_with("LOG_")) return "TraceLogLevel";
+    if (value_name.starts_with("KEY_")) return "KeyboardKey";
+    if (value_name.starts_with("MOUSE_BUTTON_")) return "MouseButton";
+    if (value_name.starts_with("MOUSE_CURSOR_")) return "MouseCursor";
+    if (value_name.starts_with("GAMEPAD_BUTTON_")) return "GamepadButton";
+    if (value_name.starts_with("GAMEPAD_AXIS_")) return "GamepadAxis";
+    if (value_name.starts_with("MATERIAL_MAP_")) return "MaterialMapIndex";
+    if (value_name.starts_with("SHADER_LOC_")) return "ShaderLocationIndex";
+    if (value_name.starts_with("SHADER_UNIFORM_")) return "ShaderUniformDataType";
+    if (value_name.starts_with("SHADER_ATTRIB_")) return "ShaderAttributeDataType";
+    if (value_name.starts_with("PIXELFORMAT_")) return "PixelFormat";
+    if (value_name.starts_with("TEXTURE_FILTER_")) return "TextureFilter";
+    if (value_name.starts_with("TEXTURE_WRAP_")) return "TextureWrap";
+    if (value_name.starts_with("CUBEMAP_LAYOUT_")) return "CubemapLayout";
+    if (value_name.starts_with("FONT_")) return "FontType";
+    if (value_name.starts_with("BLEND_")) return "BlendMode";
+    if (value_name.starts_with("CAMERA_")) return "CameraMode";
+    if (value_name.starts_with("NPATCH_")) return "NPatchLayout";
+    return "";
+}
+
+fn skip_public_enum_define_alias(value: []u8) bool {
+    let enum_name = enum_name_for_value(value);
+    if (#enum_name == 0 or enum_is_flags(enum_name)) {
+        return false;
+    }
+    return true;
+}
+
+fn mapped_enum_param_type(function_name: []u8, param_name: []u8, c_type: []u8) []u8 {
+    if (c_type == "int") {
+        if (param_name == "key") return "KeyboardKey";
+        if (param_name == "button" and function_name.starts_with("IsMouseButton")) return "MouseButton";
+        if (param_name == "button" and function_name.starts_with("GetGamepadButton")) return "GamepadButton";
+        if (param_name == "axis") return "GamepadAxis";
+        if (param_name == "cursor") return "MouseCursor";
+        if (param_name == "logLevel") return "TraceLogLevel";
+        if (param_name == "mode" and function_name == "BeginBlendMode") return "BlendMode";
+        if (param_name == "uniformType") return "ShaderUniformDataType";
+        if (param_name == "filter") return "TextureFilter";
+        if (param_name == "wrap") return "TextureWrap";
+    }
+    return "";
+}
+
 fn remove_words(text: []u8) []u8 {
     let mut out = text.trim_ascii();
     if (out.starts_with("const ")) {
@@ -184,6 +282,27 @@ fn emit_kern_type(out: *mut Writer, c_type: []u8) void {
     emit_base_type(out, array_base);
 }
 
+fn emit_param_type(out: *mut Writer, function_name: []u8, param_name: []u8, c_type: []u8) void {
+    let enum_type = mapped_enum_param_type(function_name, param_name, c_type);
+    if (#enum_type != 0) {
+        write(out, enum_type);
+        return;
+    }
+    emit_kern_type(out, c_type);
+}
+
+fn emit_enum_start(out: *mut Writer, name: []u8) void {
+    emit(out, "pub type {}: {} = enum {{\n", .{ name, enum_backing_type(name) });
+}
+
+fn emit_enum_value(out: *mut Writer, enum_name: []u8, value_name: []u8, value: []u8) void {
+    emit(out, "    {} = {},\n", .{ enum_variant_name(enum_name, value_name), value });
+}
+
+fn emit_flag_value(out: *mut Writer, enum_name: []u8, value_name: []u8, value: []u8) void {
+    emit(out, "pub const {} = {}.{{{}}};\n", .{ value_name, enum_backing_type(enum_name), value });
+}
+
 fn field_parts(line: []u8) ?Line {
     let .{ Some: split } = line.find("]: ") else return .None;
     let mut body = line.[split + 3 .. #line];
@@ -208,7 +327,7 @@ fn emit_raw_struct_field(out: *mut Writer, line: []u8) void {
     write(out, ",\n");
 }
 
-fn parse_param(line: []u8, out: *mut base.coll.String, alloc: *mut base.mem.alloc.Allocator) bool {
+fn parse_param(function_name: []u8, line: []u8, out: *mut base.coll.String, alloc: *mut base.mem.alloc.Allocator) bool {
     let .{ Some: split } = line.find("]: ") else return true;
     let rest = line.[split + 3 .. #line];
     let .{ Some: type_marker } = rest.find(" (type: ") else return true;
@@ -233,7 +352,7 @@ fn parse_param(line: []u8, out: *mut base.coll.String, alloc: *mut base.mem.allo
     defer tmp..&.deinit(alloc);
     let mut writer = base.io.string_writer(alloc, tmp..&);
     let type_writer = *mut Writer.{ writer..& };
-    emit_kern_type(type_writer, c_type);
+    emit_param_type(type_writer, function_name, name, c_type);
     if (writer..&.did_fail()) {
         return false;
     }
@@ -259,8 +378,11 @@ fn emit_raw(text: []u8) i32 {
     let mut stdout_file = io.stdout();
     let out = *mut Writer.{ stdout_file..& };
     let mut in_struct = false;
+    let mut in_enums = false;
     let mut in_functions = false;
     let mut struct_open = false;
+    let mut enum_open = false;
+    let mut enum_name = "".[0 .. 0];
     let mut function = FunctionState.{};
     defer function.params..&.deinit(gpa);
 
@@ -275,19 +397,42 @@ fn emit_raw(text: []u8) i32 {
 
         if (line.starts_with("Struct ")) {
             if (struct_open) write(out, "};\n\n");
+            if (enum_open) write(out, "};\n\n");
             in_struct = true;
+            in_enums = false;
             struct_open = false;
+            enum_open = false;
             continue;
         }
         if (line.starts_with("Aliases found")) {
             if (struct_open) write(out, "};\n\n");
+            if (enum_open) write(out, "};\n\n");
             in_struct = false;
+            in_enums = false;
             struct_open = false;
+            enum_open = false;
+            continue;
+        }
+        if (line.starts_with("Enums found")) {
+            if (struct_open) write(out, "};\n\n");
+            in_struct = false;
+            in_enums = true;
+            struct_open = false;
+            write(out, "\n");
             continue;
         }
         if (line.starts_with("Functions found")) {
+            if (enum_open) write(out, "};\n\n");
+            in_enums = false;
+            enum_open = false;
             in_functions = true;
             write(out, "extern {\n");
+            continue;
+        }
+        if (line.starts_with("Callbacks found")) {
+            if (enum_open) write(out, "};\n\n");
+            in_enums = false;
+            enum_open = false;
             continue;
         }
         if (in_struct and line.starts_with("  Name: ")) {
@@ -300,7 +445,34 @@ fn emit_raw(text: []u8) i32 {
             emit_raw_struct_field(out, line);
             continue;
         }
-        if (!in_functions and line.starts_with("  Type: ") and !in_struct) {
+        if (in_enums and line.starts_with("Enum ")) {
+            if (enum_open) write(out, "};\n\n");
+            enum_open = false;
+            enum_name = "";
+            continue;
+        }
+        if (in_enums and line.starts_with("  Name: ")) {
+            enum_name = strip_prefix_or_empty(line, "  Name: ");
+            if (!enum_is_flags(enum_name)) {
+                emit_enum_start(out, enum_name);
+                enum_open = true;
+            }
+            continue;
+        }
+        if (in_enums and line.starts_with("  Value[")) {
+            let .{ Some: open } = line.find_byte(b'[') else continue;
+            let .{ Some: close } = line.find_byte(b']') else continue;
+            let .{ Some: colon } = line.find("]: ") else continue;
+            let name = line.[open + 1 .. close];
+            let value = line.[colon + 3 .. #line].trim_ascii();
+            if (enum_is_flags(enum_name)) {
+                emit_flag_value(out, enum_name, name, value);
+            } else {
+                emit_enum_value(out, enum_name, name, value);
+            }
+            continue;
+        }
+        if (!in_functions and line.starts_with("  Type: ") and !in_struct and !in_enums) {
             let alias_type = strip_prefix_or_empty(line, "  Type: ");
             let .{ Some: item2 } = next_line(text, index) else continue;
             if (!item2.text.starts_with("  Name: ")) {
@@ -338,7 +510,7 @@ fn emit_raw(text: []u8) i32 {
             continue;
         }
         if (in_functions and line.starts_with("  Param[")) {
-            if (!parse_param(line, function.params..&, gpa)) {
+            if (!parse_param(function.name, line, function.params..&, gpa)) {
                 function.skip = true;
             }
             continue;
@@ -381,7 +553,7 @@ fn emit_public_helpers(out: *mut Writer) void {
     write(out, "pub fn vector2(x: f32, y: f32) Vector2 {\n    return Vector2.{ x: x, y: y };\n}\n\n");
     write(out, "pub fn vector3(x: f32, y: f32, z: f32) Vector3 {\n    return Vector3.{ x: x, y: y, z: z };\n}\n\n");
     write(out, "pub fn rectangle(x: f32, y: f32, width: f32, height: f32) Rectangle {\n    return Rectangle.{ x: x, y: y, width: width, height: height };\n}\n\n");
-    write(out, "pub fn z_ptr(text_z: []u8) *u8 {\n    if (#text_z == 0) {\n        return null_ptr[u8]();\n    }\n    return text_z.[0].& as *u8;\n}\n\n");
+    write(out, "pub fn z_ptr(text_z: []u8) *u8 {\n    if (text_z.len() == 0) {\n        return null_ptr[u8]();\n    }\n    return text_z.[0].& as *u8;\n}\n\n");
     write(out, "pub fn init_window(width: i32, height: i32, title_z: []u8) void {\n    raw.InitWindow(width, height, z_ptr(title_z));\n}\n\n");
     write(out, "pub fn close_window() void {\n    raw.CloseWindow();\n}\n\n");
     write(out, "pub fn window_should_close() bool {\n    return raw.WindowShouldClose();\n}\n\n");
@@ -392,9 +564,9 @@ fn emit_public_helpers(out: *mut Writer) void {
     write(out, "pub fn draw_text(text_z: []u8, pos_x: i32, pos_y: i32, font_size: i32, tint: Color) void {\n    raw.DrawText(z_ptr(text_z), pos_x, pos_y, font_size, tint);\n}\n\n");
     write(out, "pub fn measure_text(text_z: []u8, font_size: i32) i32 {\n    return raw.MeasureText(z_ptr(text_z), font_size);\n}\n\n");
     write(out, "pub fn draw_fps(pos_x: i32, pos_y: i32) void {\n    raw.DrawFPS(pos_x, pos_y);\n}\n\n");
-    write(out, "pub fn is_key_pressed(key: i32) bool {\n    return raw.IsKeyPressed(key);\n}\n\n");
-    write(out, "pub fn is_key_down(key: i32) bool {\n    return raw.IsKeyDown(key);\n}\n\n");
-    write(out, "pub fn is_mouse_button_pressed(button: i32) bool {\n    return raw.IsMouseButtonPressed(button);\n}\n\n");
+    write(out, "pub fn is_key_pressed(key: Key) bool {\n    return raw.IsKeyPressed(key);\n}\n\n");
+    write(out, "pub fn is_key_down(key: Key) bool {\n    return raw.IsKeyDown(key);\n}\n\n");
+    write(out, "pub fn is_mouse_button_pressed(button: MouseButton) bool {\n    return raw.IsMouseButtonPressed(button);\n}\n\n");
     write(out, "pub fn get_mouse_position() Vector2 {\n    return raw.GetMousePosition();\n}\n\n");
     write(out, "pub fn load_texture(path_z: []u8) Texture2D {\n    return raw.LoadTexture(z_ptr(path_z));\n}\n\n");
     write(out, "pub fn unload_texture(texture: Texture2D) void {\n    raw.UnloadTexture(texture);\n}\n\n");
@@ -418,6 +590,7 @@ fn emit_public(text: []u8) i32 {
     let mut in_structs = false;
     let mut in_aliases = false;
     let mut in_enums = false;
+    let mut enum_name = "".[0 .. 0];
     let mut define_name = "".[0 .. 0];
     let mut define_type = "".[0 .. 0];
     let mut alias_type = "".[0 .. 0];
@@ -463,7 +636,9 @@ fn emit_public(text: []u8) i32 {
                 if (define_type == "COLOR") {
                     emit_color_define(out, define_name, value);
                 } else if ((define_type == "INT" or define_type == "UNKNOWN") and is_public_define_name(define_name) and is_public_define_name(value)) {
-                    emit(out, "pub const {} = {};\n", .{ define_name, value });
+                    if (!skip_public_enum_define_alias(value)) {
+                        emit(out, "pub const {} = {};\n", .{ define_name, value });
+                    }
                 } else if (define_type == "INT" and is_public_define_name(define_name)) {
                     emit(out, "pub const {} = i32.{{{}}};\n", .{ define_name, value });
                 }
@@ -491,7 +666,26 @@ fn emit_public(text: []u8) i32 {
             let .{ Some: colon } = line.find("]: ") else continue;
             let name = line.[open + 1 .. close];
             let value = line.[colon + 3 .. #line].trim_ascii();
-            emit(out, "pub const {} = i32.{{{}}};\n", .{ name, value });
+            if (enum_is_flags(enum_name)) {
+                emit_flag_value(out, enum_name, name, value);
+            }
+            continue;
+        }
+        if (in_enums and line.starts_with("Enum ")) {
+            enum_name = "";
+            continue;
+        }
+        if (in_enums and line.starts_with("  Name: ")) {
+            enum_name = strip_prefix_or_empty(line, "  Name: ");
+            if (enum_is_flags(enum_name)) {
+                continue;
+            }
+            let alias = public_enum_alias(enum_name);
+            if (alias == enum_name) {
+                emit(out, "pub type {} = raw.{};\n", .{ enum_name, enum_name });
+            } else {
+                emit(out, "pub type {} = raw.{};\npub type {} = raw.{};\n", .{ enum_name, enum_name, alias, enum_name });
+            }
             continue;
         }
     }

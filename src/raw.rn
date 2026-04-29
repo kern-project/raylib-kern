@@ -285,6 +285,369 @@ pub type Camera = Camera3D;
 
 pub type ModelAnimPose = *mut Transform;
 
+
+pub const FLAG_VSYNC_HINT = u32.{64};
+pub const FLAG_FULLSCREEN_MODE = u32.{2};
+pub const FLAG_WINDOW_RESIZABLE = u32.{4};
+pub const FLAG_WINDOW_UNDECORATED = u32.{8};
+pub const FLAG_WINDOW_HIDDEN = u32.{128};
+pub const FLAG_WINDOW_MINIMIZED = u32.{512};
+pub const FLAG_WINDOW_MAXIMIZED = u32.{1024};
+pub const FLAG_WINDOW_UNFOCUSED = u32.{2048};
+pub const FLAG_WINDOW_TOPMOST = u32.{4096};
+pub const FLAG_WINDOW_ALWAYS_RUN = u32.{256};
+pub const FLAG_WINDOW_TRANSPARENT = u32.{16};
+pub const FLAG_WINDOW_HIGHDPI = u32.{8192};
+pub const FLAG_WINDOW_MOUSE_PASSTHROUGH = u32.{16384};
+pub const FLAG_BORDERLESS_WINDOWED_MODE = u32.{32768};
+pub const FLAG_MSAA_4X_HINT = u32.{32};
+pub const FLAG_INTERLACED_HINT = u32.{65536};
+pub type TraceLogLevel: i32 = enum {
+    ALL = 0,
+    TRACE = 1,
+    DEBUG = 2,
+    INFO = 3,
+    WARNING = 4,
+    ERROR = 5,
+    FATAL = 6,
+    NONE = 7,
+};
+
+pub type KeyboardKey: i32 = enum {
+    NULL = 0,
+    APOSTROPHE = 39,
+    COMMA = 44,
+    MINUS = 45,
+    PERIOD = 46,
+    SLASH = 47,
+    ZERO = 48,
+    ONE = 49,
+    TWO = 50,
+    THREE = 51,
+    FOUR = 52,
+    FIVE = 53,
+    SIX = 54,
+    SEVEN = 55,
+    EIGHT = 56,
+    NINE = 57,
+    SEMICOLON = 59,
+    EQUAL = 61,
+    A = 65,
+    B = 66,
+    C = 67,
+    D = 68,
+    E = 69,
+    F = 70,
+    G = 71,
+    H = 72,
+    I = 73,
+    J = 74,
+    K = 75,
+    L = 76,
+    M = 77,
+    N = 78,
+    O = 79,
+    P = 80,
+    Q = 81,
+    R = 82,
+    S = 83,
+    T = 84,
+    U = 85,
+    V = 86,
+    W = 87,
+    X = 88,
+    Y = 89,
+    Z = 90,
+    LEFT_BRACKET = 91,
+    BACKSLASH = 92,
+    RIGHT_BRACKET = 93,
+    GRAVE = 96,
+    SPACE = 32,
+    ESCAPE = 256,
+    ENTER = 257,
+    TAB = 258,
+    BACKSPACE = 259,
+    INSERT = 260,
+    DELETE = 261,
+    RIGHT = 262,
+    LEFT = 263,
+    DOWN = 264,
+    UP = 265,
+    PAGE_UP = 266,
+    PAGE_DOWN = 267,
+    HOME = 268,
+    END = 269,
+    CAPS_LOCK = 280,
+    SCROLL_LOCK = 281,
+    NUM_LOCK = 282,
+    PRINT_SCREEN = 283,
+    PAUSE = 284,
+    F1 = 290,
+    F2 = 291,
+    F3 = 292,
+    F4 = 293,
+    F5 = 294,
+    F6 = 295,
+    F7 = 296,
+    F8 = 297,
+    F9 = 298,
+    F10 = 299,
+    F11 = 300,
+    F12 = 301,
+    LEFT_SHIFT = 340,
+    LEFT_CONTROL = 341,
+    LEFT_ALT = 342,
+    LEFT_SUPER = 343,
+    RIGHT_SHIFT = 344,
+    RIGHT_CONTROL = 345,
+    RIGHT_ALT = 346,
+    RIGHT_SUPER = 347,
+    KB_MENU = 348,
+    KP_0 = 320,
+    KP_1 = 321,
+    KP_2 = 322,
+    KP_3 = 323,
+    KP_4 = 324,
+    KP_5 = 325,
+    KP_6 = 326,
+    KP_7 = 327,
+    KP_8 = 328,
+    KP_9 = 329,
+    KP_DECIMAL = 330,
+    KP_DIVIDE = 331,
+    KP_MULTIPLY = 332,
+    KP_SUBTRACT = 333,
+    KP_ADD = 334,
+    KP_ENTER = 335,
+    KP_EQUAL = 336,
+    BACK = 4,
+    MENU = 5,
+    VOLUME_UP = 24,
+    VOLUME_DOWN = 25,
+};
+
+pub type MouseButton: i32 = enum {
+    LEFT = 0,
+    RIGHT = 1,
+    MIDDLE = 2,
+    SIDE = 3,
+    EXTRA = 4,
+    FORWARD = 5,
+    BACK = 6,
+};
+
+pub type MouseCursor: i32 = enum {
+    DEFAULT = 0,
+    ARROW = 1,
+    IBEAM = 2,
+    CROSSHAIR = 3,
+    POINTING_HAND = 4,
+    RESIZE_EW = 5,
+    RESIZE_NS = 6,
+    RESIZE_NWSE = 7,
+    RESIZE_NESW = 8,
+    RESIZE_ALL = 9,
+    NOT_ALLOWED = 10,
+};
+
+pub type GamepadButton: i32 = enum {
+    UNKNOWN = 0,
+    LEFT_FACE_UP = 1,
+    LEFT_FACE_RIGHT = 2,
+    LEFT_FACE_DOWN = 3,
+    LEFT_FACE_LEFT = 4,
+    RIGHT_FACE_UP = 5,
+    RIGHT_FACE_RIGHT = 6,
+    RIGHT_FACE_DOWN = 7,
+    RIGHT_FACE_LEFT = 8,
+    LEFT_TRIGGER_1 = 9,
+    LEFT_TRIGGER_2 = 10,
+    RIGHT_TRIGGER_1 = 11,
+    RIGHT_TRIGGER_2 = 12,
+    MIDDLE_LEFT = 13,
+    MIDDLE = 14,
+    MIDDLE_RIGHT = 15,
+    LEFT_THUMB = 16,
+    RIGHT_THUMB = 17,
+};
+
+pub type GamepadAxis: i32 = enum {
+    LEFT_X = 0,
+    LEFT_Y = 1,
+    RIGHT_X = 2,
+    RIGHT_Y = 3,
+    LEFT_TRIGGER = 4,
+    RIGHT_TRIGGER = 5,
+};
+
+pub type MaterialMapIndex: i32 = enum {
+    ALBEDO = 0,
+    METALNESS = 1,
+    NORMAL = 2,
+    ROUGHNESS = 3,
+    OCCLUSION = 4,
+    EMISSION = 5,
+    HEIGHT = 6,
+    CUBEMAP = 7,
+    IRRADIANCE = 8,
+    PREFILTER = 9,
+    BRDF = 10,
+};
+
+pub type ShaderLocationIndex: i32 = enum {
+    VERTEX_POSITION = 0,
+    VERTEX_TEXCOORD01 = 1,
+    VERTEX_TEXCOORD02 = 2,
+    VERTEX_NORMAL = 3,
+    VERTEX_TANGENT = 4,
+    VERTEX_COLOR = 5,
+    MATRIX_MVP = 6,
+    MATRIX_VIEW = 7,
+    MATRIX_PROJECTION = 8,
+    MATRIX_MODEL = 9,
+    MATRIX_NORMAL = 10,
+    VECTOR_VIEW = 11,
+    COLOR_DIFFUSE = 12,
+    COLOR_SPECULAR = 13,
+    COLOR_AMBIENT = 14,
+    MAP_ALBEDO = 15,
+    MAP_METALNESS = 16,
+    MAP_NORMAL = 17,
+    MAP_ROUGHNESS = 18,
+    MAP_OCCLUSION = 19,
+    MAP_EMISSION = 20,
+    MAP_HEIGHT = 21,
+    MAP_CUBEMAP = 22,
+    MAP_IRRADIANCE = 23,
+    MAP_PREFILTER = 24,
+    MAP_BRDF = 25,
+    VERTEX_BONEIDS = 26,
+    VERTEX_BONEWEIGHTS = 27,
+    MATRIX_BONETRANSFORMS = 28,
+    VERTEX_INSTANCETRANSFORM = 29,
+};
+
+pub type ShaderUniformDataType: i32 = enum {
+    FLOAT = 0,
+    VEC2 = 1,
+    VEC3 = 2,
+    VEC4 = 3,
+    INT = 4,
+    IVEC2 = 5,
+    IVEC3 = 6,
+    IVEC4 = 7,
+    UINT = 8,
+    UIVEC2 = 9,
+    UIVEC3 = 10,
+    UIVEC4 = 11,
+    SAMPLER2D = 12,
+};
+
+pub type ShaderAttributeDataType: i32 = enum {
+    FLOAT = 0,
+    VEC2 = 1,
+    VEC3 = 2,
+    VEC4 = 3,
+};
+
+pub type PixelFormat: i32 = enum {
+    UNCOMPRESSED_GRAYSCALE = 1,
+    UNCOMPRESSED_GRAY_ALPHA = 2,
+    UNCOMPRESSED_R5G6B5 = 3,
+    UNCOMPRESSED_R8G8B8 = 4,
+    UNCOMPRESSED_R5G5B5A1 = 5,
+    UNCOMPRESSED_R4G4B4A4 = 6,
+    UNCOMPRESSED_R8G8B8A8 = 7,
+    UNCOMPRESSED_R32 = 8,
+    UNCOMPRESSED_R32G32B32 = 9,
+    UNCOMPRESSED_R32G32B32A32 = 10,
+    UNCOMPRESSED_R16 = 11,
+    UNCOMPRESSED_R16G16B16 = 12,
+    UNCOMPRESSED_R16G16B16A16 = 13,
+    COMPRESSED_DXT1_RGB = 14,
+    COMPRESSED_DXT1_RGBA = 15,
+    COMPRESSED_DXT3_RGBA = 16,
+    COMPRESSED_DXT5_RGBA = 17,
+    COMPRESSED_ETC1_RGB = 18,
+    COMPRESSED_ETC2_RGB = 19,
+    COMPRESSED_ETC2_EAC_RGBA = 20,
+    COMPRESSED_PVRT_RGB = 21,
+    COMPRESSED_PVRT_RGBA = 22,
+    COMPRESSED_ASTC_4x4_RGBA = 23,
+    COMPRESSED_ASTC_8x8_RGBA = 24,
+};
+
+pub type TextureFilter: i32 = enum {
+    POINT = 0,
+    BILINEAR = 1,
+    TRILINEAR = 2,
+    ANISOTROPIC_4X = 3,
+    ANISOTROPIC_8X = 4,
+    ANISOTROPIC_16X = 5,
+};
+
+pub type TextureWrap: i32 = enum {
+    REPEAT = 0,
+    CLAMP = 1,
+    MIRROR_REPEAT = 2,
+    MIRROR_CLAMP = 3,
+};
+
+pub type CubemapLayout: i32 = enum {
+    AUTO_DETECT = 0,
+    LINE_VERTICAL = 1,
+    LINE_HORIZONTAL = 2,
+    CROSS_THREE_BY_FOUR = 3,
+    CROSS_FOUR_BY_THREE = 4,
+};
+
+pub type FontType: i32 = enum {
+    DEFAULT = 0,
+    BITMAP = 1,
+    SDF = 2,
+};
+
+pub type BlendMode: i32 = enum {
+    ALPHA = 0,
+    ADDITIVE = 1,
+    MULTIPLIED = 2,
+    ADD_COLORS = 3,
+    SUBTRACT_COLORS = 4,
+    ALPHA_PREMULTIPLY = 5,
+    CUSTOM = 6,
+    CUSTOM_SEPARATE = 7,
+};
+
+pub const GESTURE_NONE = u32.{0};
+pub const GESTURE_TAP = u32.{1};
+pub const GESTURE_DOUBLETAP = u32.{2};
+pub const GESTURE_HOLD = u32.{4};
+pub const GESTURE_DRAG = u32.{8};
+pub const GESTURE_SWIPE_RIGHT = u32.{16};
+pub const GESTURE_SWIPE_LEFT = u32.{32};
+pub const GESTURE_SWIPE_UP = u32.{64};
+pub const GESTURE_SWIPE_DOWN = u32.{128};
+pub const GESTURE_PINCH_IN = u32.{256};
+pub const GESTURE_PINCH_OUT = u32.{512};
+pub type CameraMode: i32 = enum {
+    CUSTOM = 0,
+    FREE = 1,
+    ORBITAL = 2,
+    FIRST_PERSON = 3,
+    THIRD_PERSON = 4,
+};
+
+pub type CameraProjection: i32 = enum {
+    PERSPECTIVE = 0,
+    ORTHOGRAPHIC = 1,
+};
+
+pub type NPatchLayout: i32 = enum {
+    NINE_PATCH = 0,
+    THREE_PATCH_VERTICAL = 1,
+    THREE_PATCH_HORIZONTAL = 2,
+};
+
 extern {
     pub fn InitWindow(width: i32, height: i32, title: *u8) void;
     pub fn CloseWindow() void;
@@ -352,7 +715,7 @@ extern {
     pub fn EndTextureMode() void;
     pub fn BeginShaderMode(shader: Shader) void;
     pub fn EndShaderMode() void;
-    pub fn BeginBlendMode(mode: i32) void;
+    pub fn BeginBlendMode(mode: BlendMode) void;
     pub fn EndBlendMode() void;
     pub fn BeginScissorMode(x: i32, y: i32, width: i32, height: i32) void;
     pub fn EndScissorMode() void;
@@ -365,8 +728,8 @@ extern {
     pub fn IsShaderValid(shader: Shader) bool;
     pub fn GetShaderLocation(shader: Shader, uniformName: *u8) i32;
     pub fn GetShaderLocationAttrib(shader: Shader, attribName: *u8) i32;
-    pub fn SetShaderValue(shader: Shader, locIndex: i32, value: *mut void, uniformType: i32) void;
-    pub fn SetShaderValueV(shader: Shader, locIndex: i32, value: *mut void, uniformType: i32, count: i32) void;
+    pub fn SetShaderValue(shader: Shader, locIndex: i32, value: *mut void, uniformType: ShaderUniformDataType) void;
+    pub fn SetShaderValueV(shader: Shader, locIndex: i32, value: *mut void, uniformType: ShaderUniformDataType, count: i32) void;
     pub fn SetShaderValueMatrix(shader: Shader, locIndex: i32, mat: Matrix) void;
     pub fn SetShaderValueTexture(shader: Shader, locIndex: i32, texture: Texture2D) void;
     pub fn UnloadShader(shader: Shader) void;
@@ -392,7 +755,7 @@ extern {
     pub fn TakeScreenshot(fileName: *u8) void;
     pub fn SetConfigFlags(flags: u32) void;
     pub fn OpenURL(url: *u8) void;
-    pub fn SetTraceLogLevel(logLevel: i32) void;
+    pub fn SetTraceLogLevel(logLevel: TraceLogLevel) void;
     pub fn MemAlloc(size: u32) *mut void;
     pub fn MemRealloc(ptr: *mut void, size: u32) *mut void;
     pub fn MemFree(ptr: *mut void) void;
@@ -449,15 +812,15 @@ extern {
     pub fn StartAutomationEventRecording() void;
     pub fn StopAutomationEventRecording() void;
     pub fn PlayAutomationEvent(event: AutomationEvent) void;
-    pub fn IsKeyPressed(key: i32) bool;
-    pub fn IsKeyPressedRepeat(key: i32) bool;
-    pub fn IsKeyDown(key: i32) bool;
-    pub fn IsKeyReleased(key: i32) bool;
-    pub fn IsKeyUp(key: i32) bool;
+    pub fn IsKeyPressed(key: KeyboardKey) bool;
+    pub fn IsKeyPressedRepeat(key: KeyboardKey) bool;
+    pub fn IsKeyDown(key: KeyboardKey) bool;
+    pub fn IsKeyReleased(key: KeyboardKey) bool;
+    pub fn IsKeyUp(key: KeyboardKey) bool;
     pub fn GetKeyPressed() i32;
     pub fn GetCharPressed() i32;
-    pub fn GetKeyName(key: i32) *u8;
-    pub fn SetExitKey(key: i32) void;
+    pub fn GetKeyName(key: KeyboardKey) *u8;
+    pub fn SetExitKey(key: KeyboardKey) void;
     pub fn IsGamepadAvailable(gamepad: i32) bool;
     pub fn GetGamepadName(gamepad: i32) *u8;
     pub fn IsGamepadButtonPressed(gamepad: i32, button: i32) bool;
@@ -466,13 +829,13 @@ extern {
     pub fn IsGamepadButtonUp(gamepad: i32, button: i32) bool;
     pub fn GetGamepadButtonPressed() i32;
     pub fn GetGamepadAxisCount(gamepad: i32) i32;
-    pub fn GetGamepadAxisMovement(gamepad: i32, axis: i32) f32;
+    pub fn GetGamepadAxisMovement(gamepad: i32, axis: GamepadAxis) f32;
     pub fn SetGamepadMappings(mappings: *u8) i32;
     pub fn SetGamepadVibration(gamepad: i32, leftMotor: f32, rightMotor: f32, duration: f32) void;
-    pub fn IsMouseButtonPressed(button: i32) bool;
-    pub fn IsMouseButtonDown(button: i32) bool;
-    pub fn IsMouseButtonReleased(button: i32) bool;
-    pub fn IsMouseButtonUp(button: i32) bool;
+    pub fn IsMouseButtonPressed(button: MouseButton) bool;
+    pub fn IsMouseButtonDown(button: MouseButton) bool;
+    pub fn IsMouseButtonReleased(button: MouseButton) bool;
+    pub fn IsMouseButtonUp(button: MouseButton) bool;
     pub fn GetMouseX() i32;
     pub fn GetMouseY() i32;
     pub fn GetMousePosition() Vector2;
@@ -482,7 +845,7 @@ extern {
     pub fn SetMouseScale(scaleX: f32, scaleY: f32) void;
     pub fn GetMouseWheelMove() f32;
     pub fn GetMouseWheelMoveV() Vector2;
-    pub fn SetMouseCursor(cursor: i32) void;
+    pub fn SetMouseCursor(cursor: MouseCursor) void;
     pub fn GetTouchX() i32;
     pub fn GetTouchY() i32;
     pub fn GetTouchPosition(index: i32) Vector2;
@@ -657,8 +1020,8 @@ extern {
     pub fn UpdateTexture(texture: Texture2D, pixels: *mut void) void;
     pub fn UpdateTextureRec(texture: Texture2D, rec: Rectangle, pixels: *mut void) void;
     pub fn GenTextureMipmaps(texture: *mut Texture2D) void;
-    pub fn SetTextureFilter(texture: Texture2D, filter: i32) void;
-    pub fn SetTextureWrap(texture: Texture2D, wrap: i32) void;
+    pub fn SetTextureFilter(texture: Texture2D, filter: TextureFilter) void;
+    pub fn SetTextureWrap(texture: Texture2D, wrap: TextureWrap) void;
     pub fn DrawTexture(texture: Texture2D, posX: i32, posY: i32, tint: Color) void;
     pub fn DrawTextureV(texture: Texture2D, position: Vector2, tint: Color) void;
     pub fn DrawTextureEx(texture: Texture2D, position: Vector2, rotation: f32, scale: f32, tint: Color) void;

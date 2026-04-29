@@ -23,9 +23,18 @@ fn check_constructors() void {
 }
 
 fn check_input_constants() void {
-    test.eq(raylib.KEY_A, i32.{65});
-    test.eq(raylib.KEY_ESCAPE, i32.{256});
-    test.eq(raylib.MOUSE_BUTTON_LEFT, i32.{0});
+    test.eq(match (raylib.Key.A) {
+        .A => i32.{65},
+        _ => i32.{0},
+    }, i32.{65});
+    test.eq(match (raylib.Key.ESCAPE) {
+        .ESCAPE => i32.{256},
+        _ => i32.{0},
+    }, i32.{256});
+    test.eq(match (raylib.MouseButton.LEFT) {
+        .LEFT => i32.{1},
+        _ => i32.{0},
+    }, i32.{1});
 }
 
 fn main() i32 {
