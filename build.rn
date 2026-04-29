@@ -22,6 +22,29 @@ fn compile_raylib_module(b: *mut builder.Builder, source: []u8) void {
     let _ = obj;
 }
 
+fn compile_raylib_audio_module(b: *mut builder.Builder) void {
+    let obj = b.cc_resource_config("raylib", "src/raudio.c", .{
+        include_dirs: .{
+            "src",
+            "src/platforms",
+            "src/external/glfw/include",
+        },
+        defines: .{
+            "PLATFORM_DESKTOP",
+            "GRAPHICS_API_OPENGL_33",
+            "_DEFAULT_SOURCE",
+            "_GLFW_X11",
+        },
+        args: .{
+            "-std=c99",
+            "-fno-strict-aliasing",
+            "-Wno-tautological-compare",
+        },
+        dependencies: .{},
+    });
+    let _ = obj;
+}
+
 pub fn build(b: *mut builder.Builder) void {
     if (b.unit.domain != .target) {
         return;
@@ -34,7 +57,7 @@ pub fn build(b: *mut builder.Builder) void {
         compile_raylib_module(b, "src/rtextures.c");
         compile_raylib_module(b, "src/rtext.c");
         compile_raylib_module(b, "src/rmodels.c");
-        compile_raylib_module(b, "src/raudio.c");
+        compile_raylib_audio_module(b);
     }
 
     if (b.target.os == .linux) {
