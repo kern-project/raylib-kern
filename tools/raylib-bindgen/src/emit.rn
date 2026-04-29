@@ -1,0 +1,21 @@
+//! Thin output wrapper used by the generator.
+//!
+//! The generator writes many small fragments. A tiny wrapper keeps formatting
+//! calls uniform and avoids passing `*mut Writer` through every helper.
+
+use base.io.{Printable, Writer, format_to};
+
+pub type Emitter = struct {
+    out: *mut Writer,
+};
+
+impl *mut Emitter {
+    pub fn write(text: []u8) void {
+        let _ = self.out.write(text);
+    }
+
+    pub fn fmt(pattern: []u8, args: []*Printable) void {
+        format_to(self.out, pattern, args);
+    }
+}
+

@@ -85,9 +85,9 @@ Regenerate the checked-in bindings after updating the pinned raylib resource:
 ```sh
 craft build --project-path tools/raylib-bindgen
 tools/raylib-bindgen/.craft/build/dev/target/out/raylib-bindgen-0.1.0/bin/raylib-bindgen raw \
-  .craft/resources/raylib/tools/rlparser/output/raylib_api.txt > src/raw.rn
+  .craft/resources/raylib-*/raylib/tools/rlparser/output/raylib_api.txt > src/raw.rn
 tools/raylib-bindgen/.craft/build/dev/target/out/raylib-bindgen-0.1.0/bin/raylib-bindgen public \
-  .craft/resources/raylib/tools/rlparser/output/raylib_api.txt > src/lib.rn
+  .craft/resources/raylib-*/raylib/tools/rlparser/output/raylib_api.txt > src/lib.rn
 ```
 
 ## Scope

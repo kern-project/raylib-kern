@@ -1,14 +1,14 @@
-use base.io.{Writer, format_to};
+mod parser;
+mod emit;
+
+use base.io.Writer;
 use base.mem.alloc.GPA;
+use .emit.Emitter;
+use .parser.{Line, last_space, next_line, strip_prefix_or_empty};
 use std.fs;
 use std.io;
 use std.proc;
 use sys.mem.Page;
-
-type Line = struct {
-    text: []u8,
-    next: usize,
-};
 
 type FunctionState = struct {
     active: bool = false,
@@ -18,44 +18,35 @@ type FunctionState = struct {
     skip: bool = false,
 };
 
+impl *mut FunctionState {
+    pub fn begin() void {
+        self.active = true;
+        self.name = "";
+        self.ret = "";
+        self.skip = false;
+        self.params..&.clear();
+    }
+
+    pub fn should_emit() bool {
+        return self.active and !self.skip and self.name.len() != 0 and self.ret.len() != 0;
+    }
+
+    pub fn finish() void {
+        self.params..&.clear();
+    }
+}
+
 fn fail(message: []u8) i32 {
     io.eprintln("raylib-bindgen: {}", .{ message });
     return 1;
 }
 
-fn next_line(text: []u8, start: usize) ?Line {
-    if (start >= #text) {
-        return .None;
-    }
-
-    let mut end = start;
-    while (end < #text and text.[end] != b'\n') {
-        end += 1;
-    }
-
-    let mut line_end = end;
-    if (line_end > start and text.[line_end - 1] == b'\r') {
-        line_end -= 1;
-    }
-
-    let next = if (end < #text) end + 1 else end;
-    return .{ Some: Line.{ text: text.[start .. line_end], next: next } };
-}
-
-fn write(out: *mut Writer, text: []u8) void {
-    let _ = out.write(text);
-}
-
-fn emit(out: *mut Writer, fmt: []u8, args: []*base.io.Printable) void {
-    format_to(out, fmt, args);
-}
-
 fn is_public_define_name(name: []u8) bool {
-    if (#name == 0) {
+    if (name.len() == 0) {
         return false;
     }
     let mut i = usize.{0};
-    while (i < #name) {
+    while (i < name.len()) {
         let byte = name.[i];
         if (!((byte >= b'A' and byte <= b'Z') or (byte >= b'0' and byte <= b'9') or byte == b'_')) {
             return false;
@@ -63,24 +54,6 @@ fn is_public_define_name(name: []u8) bool {
         i += 1;
     }
     return true;
-}
-
-fn strip_prefix_or_empty(text: []u8, prefix: []u8) []u8 {
-    return match (text.strip_prefix(prefix)) {
-        .{ Some: rest } => rest,
-        .None => "",
-    };
-}
-
-fn last_space(text: []u8) ?usize {
-    let mut i = #text;
-    while (i > 0) {
-        i -= 1;
-        if (text.[i] == b' ') {
-            return .{ Some: i };
-        }
-    }
-    return .None;
 }
 
 fn sanitize_name(name: []u8) []u8 {
@@ -128,7 +101,7 @@ fn enum_value_prefix(name: []u8) []u8 {
 
 fn enum_variant_name(enum_name: []u8, value_name: []u8) []u8 {
     let prefix = enum_value_prefix(enum_name);
-    if (#prefix == 0) {
+    if (prefix.len() == 0) {
         return value_name;
     }
     return match (value_name.strip_prefix(prefix)) {
@@ -166,7 +139,7 @@ fn enum_name_for_value(value_name: []u8) []u8 {
 
 fn skip_public_enum_define_alias(value: []u8) bool {
     let enum_name = enum_name_for_value(value);
-    if (#enum_name == 0 or enum_is_flags(enum_name)) {
+    if (enum_name.len() == 0 or enum_is_flags(enum_name)) {
         return false;
     }
     return true;
@@ -191,49 +164,49 @@ fn mapped_enum_param_type(function_name: []u8, param_name: []u8, c_type: []u8) [
 fn remove_words(text: []u8) []u8 {
     let mut out = text.trim_ascii();
     if (out.starts_with("const ")) {
-        out = out.[6 .. #out].trim_ascii();
+        out = out.[6 .. out.len()].trim_ascii();
     }
     if (out.starts_with("struct ")) {
-        out = out.[7 .. #out].trim_ascii();
+        out = out.[7 .. out.len()].trim_ascii();
     }
     if (out.starts_with("enum ")) {
-        out = out.[5 .. #out].trim_ascii();
+        out = out.[5 .. out.len()].trim_ascii();
     }
     return out;
 }
 
-fn emit_base_type(out: *mut Writer, c_type: []u8) void {
+fn emit_base_type(out: *mut Emitter, c_type: []u8) void {
     let base = remove_words(c_type);
-    if (base == "void") write(out, "void")
-    else if (base == "bool") write(out, "bool")
-    else if (base == "char") write(out, "u8")
-    else if (base == "unsigned char") write(out, "u8")
-    else if (base == "short") write(out, "i16")
-    else if (base == "unsigned short") write(out, "u16")
-    else if (base == "int") write(out, "i32")
-    else if (base == "unsigned int") write(out, "u32")
-    else if (base == "long") write(out, "isize")
-    else if (base == "unsigned long") write(out, "usize")
-    else if (base == "long long") write(out, "i64")
-    else if (base == "unsigned long long") write(out, "u64")
-    else if (base == "float") write(out, "f32")
-    else if (base == "double") write(out, "f64")
-    else if (base == "size_t") write(out, "usize")
-    else if (base == "rAudioBuffer") write(out, "void")
-    else if (base == "rAudioProcessor") write(out, "void")
-    else emit(out, "{}", .{ base });
+    if (base == "void") out.write("void")
+    else if (base == "bool") out.write("bool")
+    else if (base == "char") out.write("u8")
+    else if (base == "unsigned char") out.write("u8")
+    else if (base == "short") out.write("i16")
+    else if (base == "unsigned short") out.write("u16")
+    else if (base == "int") out.write("i32")
+    else if (base == "unsigned int") out.write("u32")
+    else if (base == "long") out.write("isize")
+    else if (base == "unsigned long") out.write("usize")
+    else if (base == "long long") out.write("i64")
+    else if (base == "unsigned long long") out.write("u64")
+    else if (base == "float") out.write("f32")
+    else if (base == "double") out.write("f64")
+    else if (base == "size_t") out.write("usize")
+    else if (base == "rAudioBuffer") out.write("void")
+    else if (base == "rAudioProcessor") out.write("void")
+    else out.fmt("{}", .{ base });
 }
 
-fn emit_kern_type(out: *mut Writer, c_type: []u8) void {
+fn emit_kern_type(out: *mut Emitter, c_type: []u8) void {
     let clean = remove_words(c_type);
     if (clean == "..." or clean == "va_list") {
-        write(out, "void");
+        out.write("void");
         return;
     }
 
     let mut stars = usize.{0};
     let mut i = usize.{0};
-    while (i < #clean) {
+    while (i < clean.len()) {
         if (clean.[i] == b'*') {
             stars += 1;
         }
@@ -245,7 +218,7 @@ fn emit_kern_type(out: *mut Writer, c_type: []u8) void {
     let gpa = GPA.{ backing: page }..&;
     defer no_ptr..&.deinit(gpa);
     i = 0;
-    while (i < #clean) {
+    while (i < clean.len()) {
         if (clean.[i] != b'*') {
             let _ = no_ptr..&.push_char(gpa, clean.[i]);
         }
@@ -266,46 +239,46 @@ fn emit_kern_type(out: *mut Writer, c_type: []u8) void {
         .None => {},
     }
 
-    if (#array_size != 0) {
-        emit(out, "[{}]", .{ array_size });
+    if (array_size.len() != 0) {
+        out.fmt("[{}]", .{ array_size });
     }
 
     let pointer_base_is_char = remove_words(array_base) == "char" or remove_words(array_base) == "unsigned char";
     while (stars > 0) {
         if (stars == 1 and pointer_base_is_char) {
-            write(out, "*");
+            out.write("*");
         } else {
-            write(out, "*mut ");
+            out.write("*mut ");
         }
         stars -= 1;
     }
     emit_base_type(out, array_base);
 }
 
-fn emit_param_type(out: *mut Writer, function_name: []u8, param_name: []u8, c_type: []u8) void {
+fn emit_param_type(out: *mut Emitter, function_name: []u8, param_name: []u8, c_type: []u8) void {
     let enum_type = mapped_enum_param_type(function_name, param_name, c_type);
-    if (#enum_type != 0) {
-        write(out, enum_type);
+    if (enum_type.len() != 0) {
+        out.write(enum_type);
         return;
     }
     emit_kern_type(out, c_type);
 }
 
-fn emit_enum_start(out: *mut Writer, name: []u8) void {
-    emit(out, "pub type {}: {} = enum {{\n", .{ name, enum_backing_type(name) });
+fn emit_enum_start(out: *mut Emitter, name: []u8) void {
+    out.fmt("pub type {}: {} = enum {{\n", .{ name, enum_backing_type(name) });
 }
 
-fn emit_enum_value(out: *mut Writer, enum_name: []u8, value_name: []u8, value: []u8) void {
-    emit(out, "    {} = {},\n", .{ enum_variant_name(enum_name, value_name), value });
+fn emit_enum_value(out: *mut Emitter, enum_name: []u8, value_name: []u8, value: []u8) void {
+    out.fmt("    {} = {},\n", .{ enum_variant_name(enum_name, value_name), value });
 }
 
-fn emit_flag_value(out: *mut Writer, enum_name: []u8, value_name: []u8, value: []u8) void {
-    emit(out, "pub const {} = {}.{{{}}};\n", .{ value_name, enum_backing_type(enum_name), value });
+fn emit_flag_value(out: *mut Emitter, enum_name: []u8, value_name: []u8, value: []u8) void {
+    out.fmt("pub const {} = {}.{{{}}};\n", .{ value_name, enum_backing_type(enum_name), value });
 }
 
 fn field_parts(line: []u8) ?Line {
     let .{ Some: split } = line.find("]: ") else return .None;
-    let mut body = line.[split + 3 .. #line];
+    let mut body = line.[split + 3 .. line.len()];
     match (body.find(" //")) {
         .{ Some: comment } => body = body.[0 .. comment],
         .None => {},
@@ -314,26 +287,26 @@ fn field_parts(line: []u8) ?Line {
     return .{ Some: Line.{ text: body.[0 .. space].trim_ascii(), next: space + 1 } };
 }
 
-fn emit_raw_struct_field(out: *mut Writer, line: []u8) void {
+fn emit_raw_struct_field(out: *mut Emitter, line: []u8) void {
     let .{ Some: parts } = field_parts(line) else return;
     let .{ Some: split } = line.find("]: ") else return;
-    let name = line.[split + 3 + parts.next .. #line];
+    let name = line.[split + 3 + parts.next .. line.len()];
     let clean_name = sanitize_name(match (name.find(" //")) {
         .{ Some: comment } => name.[0 .. comment],
         .None => name,
     }.trim_ascii());
-    emit(out, "    pub {}: ", .{ clean_name });
+    out.fmt("    pub {}: ", .{ clean_name });
     emit_kern_type(out, parts.text);
-    write(out, ",\n");
+    out.write(",\n");
 }
 
 fn parse_param(function_name: []u8, line: []u8, out: *mut base.coll.String, alloc: *mut base.mem.alloc.Allocator) bool {
     let .{ Some: split } = line.find("]: ") else return true;
-    let rest = line.[split + 3 .. #line];
+    let rest = line.[split + 3 .. line.len()];
     let .{ Some: type_marker } = rest.find(" (type: ") else return true;
     let name = rest.[0 .. type_marker].trim_ascii();
     let type_start = type_marker + 8;
-    let mut type_end = #rest;
+    let mut type_end = rest.len();
     if (type_end > 0 and rest.[type_end - 1] == b')') {
         type_end -= 1;
     }
@@ -352,31 +325,34 @@ fn parse_param(function_name: []u8, line: []u8, out: *mut base.coll.String, allo
     defer tmp..&.deinit(alloc);
     let mut writer = base.io.string_writer(alloc, tmp..&);
     let type_writer = *mut Writer.{ writer..& };
-    emit_param_type(type_writer, function_name, name, c_type);
+    let mut emitter = Emitter.{ out: type_writer };
+    emit_param_type(emitter..&, function_name, name, c_type);
     if (writer..&.did_fail()) {
         return false;
     }
     return out.push_str(alloc, tmp.&.as_str());
 }
 
-fn finish_function(out: *mut Writer, state: *mut FunctionState) void {
-    if (!state.*.active or state.*.skip or #state.*.name == 0 or #state.*.ret == 0) {
-        state.*.params..&.clear();
+fn finish_function(out: *mut Emitter, state: *mut FunctionState) void {
+    if (!state.should_emit()) {
+        state.finish();
         return;
     }
-    emit(out, "    pub fn {}(", .{ state.*.name });
-    write(out, state.*.params.&.as_str());
-    write(out, ") ");
+    out.fmt("    pub fn {}(", .{ state.*.name });
+    out.write(state.*.params.&.as_str());
+    out.write(") ");
     emit_kern_type(out, state.*.ret);
-    write(out, ";\n");
-    state.*.params..&.clear();
+    out.write(";\n");
+    state.finish();
 }
 
 fn emit_raw(text: []u8) i32 {
     let page = Page.{}..&;
     let gpa = GPA.{ backing: page }..&;
     let mut stdout_file = io.stdout();
-    let out = *mut Writer.{ stdout_file..& };
+    let stdout_writer = *mut Writer.{ stdout_file..& };
+    let mut emitter = Emitter.{ out: stdout_writer };
+    let out = emitter..&;
     let mut in_struct = false;
     let mut in_enums = false;
     let mut in_functions = false;
@@ -386,8 +362,8 @@ fn emit_raw(text: []u8) i32 {
     let mut function = FunctionState.{};
     defer function.params..&.deinit(gpa);
 
-    write(out, "//! Generated low-level raylib C ABI declarations.\n");
-    write(out, "//! Source: raylib tools/rlparser/output/raylib_api.txt\n\n");
+    out.write("//! Generated low-level raylib C ABI declarations.\n");
+    out.write("//! Source: raylib tools/rlparser/output/raylib_api.txt\n\n");
 
     let mut index = usize.{0};
     while (true) {
@@ -396,8 +372,8 @@ fn emit_raw(text: []u8) i32 {
         let line = item.text;
 
         if (line.starts_with("Struct ")) {
-            if (struct_open) write(out, "};\n\n");
-            if (enum_open) write(out, "};\n\n");
+            if (struct_open) out.write("};\n\n");
+            if (enum_open) out.write("};\n\n");
             in_struct = true;
             in_enums = false;
             struct_open = false;
@@ -405,8 +381,8 @@ fn emit_raw(text: []u8) i32 {
             continue;
         }
         if (line.starts_with("Aliases found")) {
-            if (struct_open) write(out, "};\n\n");
-            if (enum_open) write(out, "};\n\n");
+            if (struct_open) out.write("};\n\n");
+            if (enum_open) out.write("};\n\n");
             in_struct = false;
             in_enums = false;
             struct_open = false;
@@ -414,30 +390,30 @@ fn emit_raw(text: []u8) i32 {
             continue;
         }
         if (line.starts_with("Enums found")) {
-            if (struct_open) write(out, "};\n\n");
+            if (struct_open) out.write("};\n\n");
             in_struct = false;
             in_enums = true;
             struct_open = false;
-            write(out, "\n");
+            out.write("\n");
             continue;
         }
         if (line.starts_with("Functions found")) {
-            if (enum_open) write(out, "};\n\n");
+            if (enum_open) out.write("};\n\n");
             in_enums = false;
             enum_open = false;
             in_functions = true;
-            write(out, "extern {\n");
+            out.write("extern {\n");
             continue;
         }
         if (line.starts_with("Callbacks found")) {
-            if (enum_open) write(out, "};\n\n");
+            if (enum_open) out.write("};\n\n");
             in_enums = false;
             enum_open = false;
             continue;
         }
         if (in_struct and line.starts_with("  Name: ")) {
             let name = strip_prefix_or_empty(line, "  Name: ");
-            emit(out, "pub extern type {} = struct {{\n", .{ name });
+            out.fmt("pub extern type {} = struct {{\n", .{ name });
             struct_open = true;
             continue;
         }
@@ -446,7 +422,7 @@ fn emit_raw(text: []u8) i32 {
             continue;
         }
         if (in_enums and line.starts_with("Enum ")) {
-            if (enum_open) write(out, "};\n\n");
+            if (enum_open) out.write("};\n\n");
             enum_open = false;
             enum_name = "";
             continue;
@@ -464,7 +440,7 @@ fn emit_raw(text: []u8) i32 {
             let .{ Some: close } = line.find_byte(b']') else continue;
             let .{ Some: colon } = line.find("]: ") else continue;
             let name = line.[open + 1 .. close];
-            let value = line.[colon + 3 .. #line].trim_ascii();
+            let value = line.[colon + 3 .. line.len()].trim_ascii();
             if (enum_is_flags(enum_name)) {
                 emit_flag_value(out, enum_name, name, value);
             } else {
@@ -480,22 +456,18 @@ fn emit_raw(text: []u8) i32 {
             }
             index = item2.next;
             let alias_name_raw = strip_prefix_or_empty(item2.text, "  Name: ");
-            let alias_name = if (alias_name_raw.starts_with("*")) alias_name_raw.[1 .. #alias_name_raw] else alias_name_raw;
-            emit(out, "pub type {} = ", .{ alias_name });
+            let alias_name = if (alias_name_raw.starts_with("*")) alias_name_raw.[1 .. alias_name_raw.len()] else alias_name_raw;
+            out.fmt("pub type {} = ", .{ alias_name });
             if (alias_name_raw.starts_with("*")) {
-                write(out, "*mut ");
+                out.write("*mut ");
             }
             emit_kern_type(out, alias_type);
-            write(out, ";\n\n");
+            out.write(";\n\n");
             continue;
         }
         if (in_functions and line.starts_with("Function ")) {
             finish_function(out, function..&);
-            function.active = true;
-            function.name = "";
-            function.ret = "";
-            function.skip = false;
-            function.params..&.clear();
+            function..&.begin();
             continue;
         }
         if (in_functions and line.starts_with("  Name: ")) {
@@ -518,12 +490,12 @@ fn emit_raw(text: []u8) i32 {
     }
     finish_function(out, function..&);
     if (in_functions) {
-        write(out, "}\n");
+        out.write("}\n");
     }
     return 0;
 }
 
-fn emit_color_define(out: *mut Writer, name: []u8, value: []u8) void {
+fn emit_color_define(out: *mut Emitter, name: []u8, value: []u8) void {
     let .{ Some: open } = value.find_byte(b'{') else return;
     let .{ Some: close } = value.find_byte(b'}') else return;
     let body = value.[open + 1 .. close];
@@ -532,61 +504,63 @@ fn emit_color_define(out: *mut Writer, name: []u8, value: []u8) void {
     let mut count = usize.{0};
     while (count < 4) {
         let mut end = start;
-        while (end < #body and body.[end] != b',') {
+        while (end < body.len() and body.[end] != b',') {
             end += 1;
         }
         slots.[count] = body.[start .. end].trim_ascii();
         count += 1;
-        if (end >= #body) {
+        if (end >= body.len()) {
             break;
         }
         start = end + 1;
     }
     if (count == 4) {
-        emit(out, "pub const {} = Color.{{ r: {}, g: {}, b: {}, a: {} }};\n", .{ name, slots.[0], slots.[1], slots.[2], slots.[3] });
+        out.fmt("pub const {} = Color.{{ r: {}, g: {}, b: {}, a: {} }};\n", .{ name, slots.[0], slots.[1], slots.[2], slots.[3] });
     }
 }
 
-fn emit_public_helpers(out: *mut Writer) void {
-    write(out, "\n");
-    write(out, "pub fn color(r: u8, g: u8, b: u8, a: u8) Color {\n    return Color.{ r: r, g: g, b: b, a: a };\n}\n\n");
-    write(out, "pub fn vector2(x: f32, y: f32) Vector2 {\n    return Vector2.{ x: x, y: y };\n}\n\n");
-    write(out, "pub fn vector3(x: f32, y: f32, z: f32) Vector3 {\n    return Vector3.{ x: x, y: y, z: z };\n}\n\n");
-    write(out, "pub fn rectangle(x: f32, y: f32, width: f32, height: f32) Rectangle {\n    return Rectangle.{ x: x, y: y, width: width, height: height };\n}\n\n");
-    write(out, "pub fn z_ptr(text_z: []u8) *u8 {\n    if (text_z.len() == 0) {\n        return null_ptr[u8]();\n    }\n    return text_z.[0].& as *u8;\n}\n\n");
-    write(out, "pub fn init_window(width: i32, height: i32, title_z: []u8) void {\n    raw.InitWindow(width, height, z_ptr(title_z));\n}\n\n");
-    write(out, "pub fn close_window() void {\n    raw.CloseWindow();\n}\n\n");
-    write(out, "pub fn window_should_close() bool {\n    return raw.WindowShouldClose();\n}\n\n");
-    write(out, "pub fn set_target_fps(fps: i32) void {\n    raw.SetTargetFPS(fps);\n}\n\n");
-    write(out, "pub fn begin_drawing() void {\n    raw.BeginDrawing();\n}\n\n");
-    write(out, "pub fn end_drawing() void {\n    raw.EndDrawing();\n}\n\n");
-    write(out, "pub fn clear_background(bg: Color) void {\n    raw.ClearBackground(bg);\n}\n\n");
-    write(out, "pub fn draw_text(text_z: []u8, pos_x: i32, pos_y: i32, font_size: i32, tint: Color) void {\n    raw.DrawText(z_ptr(text_z), pos_x, pos_y, font_size, tint);\n}\n\n");
-    write(out, "pub fn measure_text(text_z: []u8, font_size: i32) i32 {\n    return raw.MeasureText(z_ptr(text_z), font_size);\n}\n\n");
-    write(out, "pub fn draw_fps(pos_x: i32, pos_y: i32) void {\n    raw.DrawFPS(pos_x, pos_y);\n}\n\n");
-    write(out, "pub fn is_key_pressed(key: Key) bool {\n    return raw.IsKeyPressed(key);\n}\n\n");
-    write(out, "pub fn is_key_down(key: Key) bool {\n    return raw.IsKeyDown(key);\n}\n\n");
-    write(out, "pub fn is_mouse_button_pressed(button: MouseButton) bool {\n    return raw.IsMouseButtonPressed(button);\n}\n\n");
-    write(out, "pub fn get_mouse_position() Vector2 {\n    return raw.GetMousePosition();\n}\n\n");
-    write(out, "pub fn load_texture(path_z: []u8) Texture2D {\n    return raw.LoadTexture(z_ptr(path_z));\n}\n\n");
-    write(out, "pub fn unload_texture(texture: Texture2D) void {\n    raw.UnloadTexture(texture);\n}\n\n");
-    write(out, "pub fn draw_texture(texture: Texture2D, pos_x: i32, pos_y: i32, tint: Color) void {\n    raw.DrawTexture(texture, pos_x, pos_y, tint);\n}\n\n");
-    write(out, "pub fn init_audio_device() void {\n    raw.InitAudioDevice();\n}\n\n");
-    write(out, "pub fn close_audio_device() void {\n    raw.CloseAudioDevice();\n}\n");
+fn emit_public_helpers(out: *mut Emitter) void {
+    out.write("\n");
+    out.write("pub fn color(r: u8, g: u8, b: u8, a: u8) Color {\n    return Color.{ r: r, g: g, b: b, a: a };\n}\n\n");
+    out.write("pub fn vector2(x: f32, y: f32) Vector2 {\n    return Vector2.{ x: x, y: y };\n}\n\n");
+    out.write("pub fn vector3(x: f32, y: f32, z: f32) Vector3 {\n    return Vector3.{ x: x, y: y, z: z };\n}\n\n");
+    out.write("pub fn rectangle(x: f32, y: f32, width: f32, height: f32) Rectangle {\n    return Rectangle.{ x: x, y: y, width: width, height: height };\n}\n\n");
+    out.write("pub fn z_ptr(text_z: []u8) *u8 {\n    if (text_z.len() == 0) {\n        return null_ptr[u8]();\n    }\n    return text_z.[0].& as *u8;\n}\n\n");
+    out.write("pub fn init_window(width: i32, height: i32, title_z: []u8) void {\n    raw.InitWindow(width, height, z_ptr(title_z));\n}\n\n");
+    out.write("pub fn close_window() void {\n    raw.CloseWindow();\n}\n\n");
+    out.write("pub fn window_should_close() bool {\n    return raw.WindowShouldClose();\n}\n\n");
+    out.write("pub fn set_target_fps(fps: i32) void {\n    raw.SetTargetFPS(fps);\n}\n\n");
+    out.write("pub fn begin_drawing() void {\n    raw.BeginDrawing();\n}\n\n");
+    out.write("pub fn end_drawing() void {\n    raw.EndDrawing();\n}\n\n");
+    out.write("pub fn clear_background(bg: Color) void {\n    raw.ClearBackground(bg);\n}\n\n");
+    out.write("pub fn draw_text(text_z: []u8, pos_x: i32, pos_y: i32, font_size: i32, tint: Color) void {\n    raw.DrawText(z_ptr(text_z), pos_x, pos_y, font_size, tint);\n}\n\n");
+    out.write("pub fn measure_text(text_z: []u8, font_size: i32) i32 {\n    return raw.MeasureText(z_ptr(text_z), font_size);\n}\n\n");
+    out.write("pub fn draw_fps(pos_x: i32, pos_y: i32) void {\n    raw.DrawFPS(pos_x, pos_y);\n}\n\n");
+    out.write("pub fn is_key_pressed(key: Key) bool {\n    return raw.IsKeyPressed(key);\n}\n\n");
+    out.write("pub fn is_key_down(key: Key) bool {\n    return raw.IsKeyDown(key);\n}\n\n");
+    out.write("pub fn is_mouse_button_pressed(button: MouseButton) bool {\n    return raw.IsMouseButtonPressed(button);\n}\n\n");
+    out.write("pub fn get_mouse_position() Vector2 {\n    return raw.GetMousePosition();\n}\n\n");
+    out.write("pub fn load_texture(path_z: []u8) Texture2D {\n    return raw.LoadTexture(z_ptr(path_z));\n}\n\n");
+    out.write("pub fn unload_texture(texture: Texture2D) void {\n    raw.UnloadTexture(texture);\n}\n\n");
+    out.write("pub fn draw_texture(texture: Texture2D, pos_x: i32, pos_y: i32, tint: Color) void {\n    raw.DrawTexture(texture, pos_x, pos_y, tint);\n}\n\n");
+    out.write("pub fn init_audio_device() void {\n    raw.InitAudioDevice();\n}\n\n");
+    out.write("pub fn close_audio_device() void {\n    raw.CloseAudioDevice();\n}\n");
 }
 
-fn emit_public_alias(out: *mut Writer, alias_name_raw: []u8, alias_type: []u8) void {
+fn emit_public_alias(out: *mut Emitter, alias_name_raw: []u8, alias_type: []u8) void {
     if (alias_name_raw.starts_with("*")) {
-        let name = alias_name_raw.[1 .. #alias_name_raw];
-        emit(out, "pub type {} = *mut raw.{};\n", .{ name, alias_type });
+        let name = alias_name_raw.[1 .. alias_name_raw.len()];
+        out.fmt("pub type {} = *mut raw.{};\n", .{ name, alias_type });
         return;
     }
-    emit(out, "pub type {} = raw.{};\n", .{ alias_name_raw, alias_type });
+    out.fmt("pub type {} = raw.{};\n", .{ alias_name_raw, alias_type });
 }
 
 fn emit_public(text: []u8) i32 {
     let mut stdout_file = io.stdout();
-    let out = *mut Writer.{ stdout_file..& };
+    let stdout_writer = *mut Writer.{ stdout_file..& };
+    let mut emitter = Emitter.{ out: stdout_writer };
+    let out = emitter..&;
     let mut in_structs = false;
     let mut in_aliases = false;
     let mut in_enums = false;
@@ -595,10 +569,10 @@ fn emit_public(text: []u8) i32 {
     let mut define_type = "".[0 .. 0];
     let mut alias_type = "".[0 .. 0];
 
-    write(out, "//! Generated raylib bindings.\n");
-    write(out, "//! Source: raylib tools/rlparser/output/raylib_api.txt\n\n");
-    write(out, "use base.mem.null_ptr;\n\n");
-    write(out, "pub mod raw;\n\n");
+    out.write("//! Generated raylib bindings.\n");
+    out.write("//! Source: raylib tools/rlparser/output/raylib_api.txt\n\n");
+    out.write("use base.mem.null_ptr;\n\n");
+    out.write("pub mod raw;\n\n");
 
     let mut index = usize.{0};
     while (true) {
@@ -618,7 +592,7 @@ fn emit_public(text: []u8) i32 {
         if (line.starts_with("Enums found")) {
             in_aliases = false;
             in_enums = true;
-            write(out, "\n");
+            out.write("\n");
             continue;
         }
         if (line.starts_with("Callbacks found")) {
@@ -637,10 +611,10 @@ fn emit_public(text: []u8) i32 {
                     emit_color_define(out, define_name, value);
                 } else if ((define_type == "INT" or define_type == "UNKNOWN") and is_public_define_name(define_name) and is_public_define_name(value)) {
                     if (!skip_public_enum_define_alias(value)) {
-                        emit(out, "pub const {} = {};\n", .{ define_name, value });
+                        out.fmt("pub const {} = {};\n", .{ define_name, value });
                     }
                 } else if (define_type == "INT" and is_public_define_name(define_name)) {
-                    emit(out, "pub const {} = i32.{{{}}};\n", .{ define_name, value });
+                    out.fmt("pub const {} = i32.{{{}}};\n", .{ define_name, value });
                 }
             }
             continue;
@@ -648,7 +622,7 @@ fn emit_public(text: []u8) i32 {
 
         if (in_structs and line.starts_with("  Name: ")) {
             let name = strip_prefix_or_empty(line, "  Name: ");
-            emit(out, "pub type {} = raw.{};\n", .{ name, name });
+            out.fmt("pub type {} = raw.{};\n", .{ name, name });
             continue;
         }
         if (in_aliases and line.starts_with("  Type: ")) {
@@ -665,7 +639,7 @@ fn emit_public(text: []u8) i32 {
             let .{ Some: close } = line.find_byte(b']') else continue;
             let .{ Some: colon } = line.find("]: ") else continue;
             let name = line.[open + 1 .. close];
-            let value = line.[colon + 3 .. #line].trim_ascii();
+            let value = line.[colon + 3 .. line.len()].trim_ascii();
             if (enum_is_flags(enum_name)) {
                 emit_flag_value(out, enum_name, name, value);
             }
@@ -682,9 +656,9 @@ fn emit_public(text: []u8) i32 {
             }
             let alias = public_enum_alias(enum_name);
             if (alias == enum_name) {
-                emit(out, "pub type {} = raw.{};\n", .{ enum_name, enum_name });
+                out.fmt("pub type {} = raw.{};\n", .{ enum_name, enum_name });
             } else {
-                emit(out, "pub type {} = raw.{};\npub type {} = raw.{};\n", .{ enum_name, enum_name, alias, enum_name });
+                out.fmt("pub type {} = raw.{};\npub type {} = raw.{};\n", .{ enum_name, enum_name, alias, enum_name });
             }
             continue;
         }
