@@ -1,17 +1,40 @@
 //! Audio device, sound effect, music stream, and raw stream helpers.
 //!
-//! raylib keeps audio separate from the window. Call `init_audio_device()` before
-//! loading or playing audio resources, and close it after every `Wave`, `Sound`,
-//! `Music`, and `AudioStream` you own has been unloaded.
+//! raylib keeps audio separate from the window. Call `open()` before loading or
+//! playing audio resources, and close it after every `Wave`, `Sound`, `Music`,
+//! and `AudioStream` you own has been unloaded.
 //!
 //! Short sound effects are usually loaded as `Sound` and played with
 //! `sound.play()`. Longer tracks use `Music`; a playing music stream must be
 //! ticked once per frame with `music.update()` so raylib can keep feeding the
 //! backend. `AudioStream` is the lower-level API for generated PCM data.
+//!
+//! ```kern
+//! let audio = raylib.audio.open();
+//! defer audio.close();
+//!
+//! let click = raylib.audio.load_sound("resources/click.wav\0")..&;
+//! defer click.unload();
+//!
+//! click.set_volume(0.8).play();
+//! ```
 
 use ..raw;
 use ..internal.z_ptr;
 use ..types.{AudioStream, Music, Sound, Wave};
+
+/// Capability handle for raylib's initialized audio device.
+///
+/// Like raylib's window, the audio backend is process-global. This handle
+/// expresses that global state as a value so setup and shutdown stay close to
+/// the code that owns audio resources.
+pub struct AudioDevice {};
+
+/// Initializes raylib's audio backend and returns its capability handle.
+pub fn open() AudioDevice {
+    raw.InitAudioDevice();
+    return .{};
+}
 
 /// Initializes raylib's audio backend.
 ///
@@ -43,6 +66,32 @@ pub fn set_master_volume(volume: f32) void {
 /// Returns the current listener master volume.
 pub fn get_master_volume() f32 {
     return raw.GetMasterVolume();
+}
+
+impl AudioDevice {
+    /// Closes the audio backend.
+    ///
+    /// Unload `Sound`, `Music`, `Wave`, and `AudioStream` values before this
+    /// runs; after the device closes, playback and streaming calls are invalid.
+    pub fn close() void {
+        raw.CloseAudioDevice();
+    }
+
+    /// Returns true when the audio device was initialized successfully.
+    pub fn is_ready() bool {
+        return raw.IsAudioDeviceReady();
+    }
+
+    /// Sets the listener master volume and keeps the handle for chaining.
+    pub fn volume(volume: f32) AudioDevice {
+        raw.SetMasterVolume(volume);
+        return self;
+    }
+
+    /// Returns the current listener master volume.
+    pub fn current_volume() f32 {
+        return raw.GetMasterVolume();
+    }
 }
 
 /// Loads wave sample data from a zero-terminated file path.
@@ -242,18 +291,21 @@ impl Sound {
     }
 
     /// Sets per-sound volume. `1.0` is normal full volume.
-    pub fn set_volume(volume: f32) void {
+    pub fn set_volume(volume: f32) Sound {
         raw.SetSoundVolume(self, volume);
+        return self;
     }
 
     /// Sets per-sound pitch. `1.0` is the original pitch.
-    pub fn set_pitch(pitch: f32) void {
+    pub fn set_pitch(pitch: f32) Sound {
         raw.SetSoundPitch(self, pitch);
+        return self;
     }
 
     /// Sets per-sound stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
-    pub fn set_pan(pan: f32) void {
+    pub fn set_pan(pan: f32) Sound {
         raw.SetSoundPan(self, pan);
+        return self;
     }
 }
 
@@ -309,18 +361,21 @@ impl &mut Sound {
     }
 
     /// Sets per-sound volume. `1.0` is normal full volume.
-    pub fn set_volume(volume: f32) void {
+    pub fn set_volume(volume: f32) &mut Sound {
         raw.SetSoundVolume(self.*, volume);
+        return self;
     }
 
     /// Sets per-sound pitch. `1.0` is the original pitch.
-    pub fn set_pitch(pitch: f32) void {
+    pub fn set_pitch(pitch: f32) &mut Sound {
         raw.SetSoundPitch(self.*, pitch);
+        return self;
     }
 
     /// Sets per-sound stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
-    pub fn set_pan(pan: f32) void {
+    pub fn set_pan(pan: f32) &mut Sound {
         raw.SetSoundPan(self.*, pan);
+        return self;
     }
 }
 

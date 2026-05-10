@@ -1,17 +1,45 @@
 //! Window lifecycle, monitor, cursor, clipboard, and frame timing helpers.
 //!
-//! `init_window()` is the usual first raylib call in graphical programs. It
-//! creates the OS window, OpenGL context, default font, and the event loop state
-//! used by input helpers. Most programs then run:
+//! `open()` is the usual first raylib call in graphical programs. It creates the
+//! OS window, OpenGL context, default font, and the event loop state used by
+//! input helpers. Most programs then run:
 //!
-//! `while (!window_should_close()) { update; begin_drawing(); draw; end_drawing(); }`
+//! ```kern
+//! let win = raylib.window.open(800, 450, "demo\0");
+//! defer win.close();
+//! win.target_fps(60);
 //!
-//! `end_drawing()` swaps buffers, applies `set_target_fps()`, and polls events
+//! while (win.is_open()) {
+//!     win.frame()
+//!         .clear(raylib.RAYWHITE)
+//!         .text("hello\0", 20, 20, 24, raylib.DARKGRAY)
+//!         .end();
+//! }
+//! ```
+//!
+//! `Frame.end()` swaps buffers, applies `Window.target_fps()`, and polls events
 //! for the next frame unless event waiting is enabled.
 
 use ..raw;
+use ..drawing.Frame;
 use ..internal.z_ptr;
 use ..types.{Image, TraceLogLevel, Vector2};
+
+/// Capability handle for raylib's initialized global window.
+///
+/// raylib owns one process-global window. This zero-sized handle makes that
+/// global state feel like an ordinary Kern value: configure it with methods,
+/// ask it whether it is still open, create frame handles from it, then close it.
+pub struct Window {};
+
+/// Opens the OS window, creates raylib's OpenGL context, and returns a handle.
+///
+/// Use `defer win.close();` after binding the returned value. GPU resources such
+/// as textures should still be unloaded before the deferred close runs.
+pub fn open(width: i32, height: i32, title_z: &[u8]) Window {
+    raw.InitWindow(width, height, z_ptr(title_z));
+    return .{};
+}
 
 /// Opens the OS window and creates raylib's OpenGL context.
 ///
@@ -37,6 +65,84 @@ pub fn window_should_close() bool {
 /// Returns true once the window has been initialized successfully.
 pub fn is_window_ready() bool {
     return raw.IsWindowReady();
+}
+
+impl Window {
+    /// Releases the window and OpenGL context.
+    pub fn close() void {
+        raw.CloseWindow();
+    }
+
+    /// Returns true while the frame loop should continue.
+    ///
+    /// This is the positive-form counterpart to raylib's `WindowShouldClose`.
+    /// It returns `false` after ESC or the window close button is requested.
+    pub fn is_open() bool {
+        return !raw.WindowShouldClose();
+    }
+
+    /// Returns true when the user pressed ESC or requested window close.
+    pub fn should_close() bool {
+        return raw.WindowShouldClose();
+    }
+
+    /// Returns true once the window has been initialized successfully.
+    pub fn is_ready() bool {
+        return raw.IsWindowReady();
+    }
+
+    /// Caps future frame endings to the requested FPS.
+    pub fn target_fps(fps: i32) Window {
+        raw.SetTargetFPS(fps);
+        return self;
+    }
+
+    /// Starts a drawing frame.
+    ///
+    /// The returned `Frame` must be ended exactly once.
+    pub fn frame() Frame {
+        raw.BeginDrawing();
+        return .{};
+    }
+
+    /// Returns the currently measured frames per second.
+    pub fn fps() i32 {
+        return raw.GetFPS();
+    }
+
+    /// Returns elapsed time for the previous frame in seconds.
+    pub fn frame_time() f32 {
+        return raw.GetFrameTime();
+    }
+
+    /// Returns seconds elapsed since this window was opened.
+    pub fn time() f64 {
+        return raw.GetTime();
+    }
+
+    /// Sets the OS window title from a zero-terminated byte string.
+    pub fn title(title_z: &[u8]) Window {
+        raw.SetWindowTitle(z_ptr(title_z));
+        return self;
+    }
+
+    /// Sets the window size.
+    pub fn size(width: i32, height: i32) Window {
+        raw.SetWindowSize(width, height);
+        return self;
+    }
+
+    /// Moves the window to an OS screen position.
+    pub fn position(x: i32, y: i32) Window {
+        raw.SetWindowPosition(x, y);
+        return self;
+    }
+
+    /// Saves the current framebuffer to a zero-terminated file path.
+    pub fn screenshot(file_name: &[u8]) Window {
+        raw.TakeScreenshot(z_ptr(file_name));
+        return self;
+    }
 }
 
 /// Returns true when the window is currently fullscreen.

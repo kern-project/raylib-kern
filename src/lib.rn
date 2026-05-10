@@ -1,12 +1,12 @@
 //! Kern-first raylib wrapper.
 //!
 //! `raw.rn` is generated from raylib's C ABI and kept private. The public API
-//! is organized by raylib domain modules, with a small root prelude for the
-//! first-window path and commonly used value constructors.
+//! is organized by raylib domain modules, with a small root prelude for common
+//! value types, constructors, and color constants.
 //!
-//! Most programs start with `init_window()`, run a frame loop until
-//! `window_should_close()`, draw a complete frame between `begin_drawing()` and
-//! `end_drawing()`, then unload resources before `close_window()`.
+//! Most programs start with `window.open()`, run a frame loop while
+//! `win.is_open()`, draw through `win.frame()`, then unload resources before
+//! `win.close()` runs.
 
 pub/ mod raw;
 mod internal;
@@ -150,60 +150,4 @@ pub use .colors.{
     MAGENTA,
     RAYWHITE,
     color,
-    fade,
-    color_alpha,
-    color_lerp,
-};
-
-pub use .window.{
-    init_window,
-    close_window,
-    window_should_close,
-    is_window_ready,
-    set_target_fps,
-    get_fps,
-    get_frame_time,
-    get_time,
-    set_window_title,
-};
-
-pub use .drawing.{
-    begin_drawing,
-    end_drawing,
-    clear_background,
-    draw_fps,
-    draw_pixel,
-    draw_line,
-    draw_line_v,
-    draw_circle,
-    draw_circle_v,
-    draw_rectangle,
-    draw_rectangle_v,
-    draw_rectangle_rec,
-    draw_rectangle_lines,
-};
-
-pub use .input.{
-    is_key_pressed,
-    is_key_pressed_repeat,
-    is_key_down,
-    is_key_released,
-    is_key_up,
-    is_mouse_button_pressed,
-    is_mouse_button_down,
-    is_mouse_button_released,
-    is_mouse_button_up,
-    get_mouse_position,
-    get_mouse_delta,
-};
-
-pub use .text.{
-    draw_text,
-    draw_text_ex,
-    measure_text,
-};
-
-pub use .audio.{
-    init_audio_device,
-    close_audio_device,
 };

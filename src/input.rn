@@ -6,6 +6,20 @@
 //!
 //! Use `_pressed` and `_released` for one-frame edges. Use `_down` and `_up` for
 //! continuous state such as movement while a key is held.
+//!
+//! ## Receiver style
+//!
+//! Prefer asking the input value for its state:
+//!
+//! ```kern
+//! if (raylib.Key.RIGHT.down()) {
+//!     pos.x += 2.0;
+//! }
+//!
+//! if (raylib.MouseButton.LEFT.pressed()) {
+//!     pos = raylib.input.mouse_position();
+//! }
+//! ```
 
 use ..raw;
 use ..internal.z_ptr;
@@ -16,6 +30,75 @@ use ..types.{
     MouseCursor,
     Vector2,
 };
+
+/// Returns the current mouse position in screen coordinates.
+pub fn mouse_position() Vector2 {
+    return raw.GetMousePosition();
+}
+
+/// Returns mouse movement for the current frame.
+pub fn mouse_delta() Vector2 {
+    return raw.GetMouseDelta();
+}
+
+impl Key {
+    /// Returns true for one frame when this key transitions from up to down.
+    pub fn pressed() bool {
+        return raw.IsKeyPressed(self);
+    }
+
+    /// Returns true for repeated key presses according to OS repeat behavior.
+    pub fn repeat() bool {
+        return raw.IsKeyPressedRepeat(self);
+    }
+
+    /// Returns true every frame while this key is held.
+    pub fn down() bool {
+        return raw.IsKeyDown(self);
+    }
+
+    /// Returns true for one frame when this key transitions from down to up.
+    pub fn released() bool {
+        return raw.IsKeyReleased(self);
+    }
+
+    /// Returns true every frame while this key is not held.
+    pub fn up() bool {
+        return raw.IsKeyUp(self);
+    }
+
+    /// Returns a pointer to raylib-owned text for this key name.
+    pub fn name() &u8 {
+        return raw.GetKeyName(self);
+    }
+
+    /// Makes this key set `Window.should_close()` to true.
+    pub fn use_as_exit() void {
+        raw.SetExitKey(self);
+    }
+}
+
+impl MouseButton {
+    /// Returns true for one frame when this mouse button is pressed.
+    pub fn pressed() bool {
+        return raw.IsMouseButtonPressed(self);
+    }
+
+    /// Returns true every frame while this mouse button is held.
+    pub fn down() bool {
+        return raw.IsMouseButtonDown(self);
+    }
+
+    /// Returns true for one frame when this mouse button is released.
+    pub fn released() bool {
+        return raw.IsMouseButtonReleased(self);
+    }
+
+    /// Returns true every frame while this mouse button is not held.
+    pub fn up() bool {
+        return raw.IsMouseButtonUp(self);
+    }
+}
 
 /// Returns true for one frame when the key transitions from up to down.
 pub fn is_key_pressed(key: Key) bool {

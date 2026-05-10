@@ -8,15 +8,16 @@ const TEXTURE_PATH = "missing.png\0";
 
 // Touches window functions without relying on a real interactive window.
 fn use_window_api() void {
-    raylib.init_window(640, 480, TITLE);
-    raylib.set_target_fps(60);
-    raylib.set_window_title(TITLE);
-    _ = raylib.window_should_close();
-    _ = raylib.is_window_ready();
-    _ = raylib.get_fps();
-    _ = raylib.get_frame_time();
-    _ = raylib.get_time();
-    raylib.close_window();
+    let win = raylib.window.open(640, 480, TITLE)
+        .target_fps(60)
+        .title(TITLE);
+    _ = win.is_open();
+    _ = win.should_close();
+    _ = win.is_ready();
+    _ = win.fps();
+    _ = win.frame_time();
+    _ = win.time();
+    win.close();
 }
 
 // Touches drawing functions so signature drift breaks compilation early.
@@ -31,64 +32,43 @@ fn use_drawing_api() void {
         4.0,
     );
 
-    raylib.begin_drawing();
-    raylib.clear_background(raylib.RAYWHITE);
-    raylib.draw_pixel(1, 2, raylib.RED);
-    raylib.draw_line(
-        0,
-        0,
-        10,
-        10,
-        raylib.BLUE,
-    );
-    raylib.draw_line_v(p, q, raylib.GREEN);
-    raylib.draw_circle(
-        20,
-        20,
-        10.0,
-        raylib.ORANGE,
-    );
-    raylib.draw_circle_v(p, 8.0, raylib.PURPLE);
-    raylib.draw_rectangle(
-        1,
-        2,
-        3,
-        4,
-        raylib.GRAY,
-    );
-    raylib.draw_rectangle_v(p, size, raylib.DARKGRAY);
-    raylib.draw_rectangle_rec(rec, raylib.BLACK);
-    raylib.draw_rectangle_lines(
-        1,
-        2,
-        3,
-        4,
-        raylib.WHITE,
-    );
-    raylib.draw_fps(10, 10);
-    raylib.draw_text(
-        TEXT,
-        10,
-        40,
-        20,
-        raylib.DARKGRAY,
-    );
-    let _ = raylib.measure_text(TEXT, 20);
-    raylib.end_drawing();
+    raylib.drawing.frame()
+        .clear(raylib.RAYWHITE)
+        .pixel(1, 2, raylib.RED)
+        .line(0, 0, 10, 10, raylib.BLUE)
+        .line_between(p, q, raylib.GREEN)
+        .circle(20, 20, 10.0, raylib.ORANGE)
+        .circle_at(p, 8.0, raylib.PURPLE)
+        .rect(1, 2, 3, 4, raylib.GRAY)
+        .rect_rec(rec, raylib.BLACK)
+        .rect_lines(1, 2, 3, 4, raylib.WHITE)
+        .fps(10, 10)
+        .text(TEXT, 10, 40, 20, raylib.DARKGRAY)
+        .end();
+    _ = size;
+    p.draw_pixel(raylib.RED);
+    p.draw_circle(8.0, raylib.BLUE);
+    p.draw_line_to(q, raylib.GREEN);
+    rec.draw(raylib.BLACK);
+    rec.draw_lines(1.0, raylib.WHITE);
+    _ = rec.contains(p);
+    _ = rec.overlaps(rec);
+    _ = p.inside_rect(rec);
+    let _ = TEXT.measure(20);
 }
 
 // Touches keyboard and mouse functions.
 fn use_input_api() void {
-    _ = raylib.is_key_pressed(raylib.Key.A);
-    _ = raylib.is_key_down(raylib.Key.SPACE);
-    _ = raylib.is_key_released(raylib.Key.ESCAPE);
-    _ = raylib.is_key_up(raylib.Key.ENTER);
-    _ = raylib.is_mouse_button_pressed(raylib.MouseButton.LEFT);
-    _ = raylib.is_mouse_button_down(raylib.MouseButton.RIGHT);
-    _ = raylib.is_mouse_button_released(raylib.MouseButton.MIDDLE);
-    _ = raylib.is_mouse_button_up(raylib.MouseButton.LEFT);
-    _ = raylib.get_mouse_position();
-    _ = raylib.get_mouse_delta();
+    _ = raylib.Key.A.pressed();
+    _ = raylib.Key.SPACE.down();
+    _ = raylib.Key.ESCAPE.released();
+    _ = raylib.Key.ENTER.up();
+    _ = raylib.MouseButton.LEFT.pressed();
+    _ = raylib.MouseButton.RIGHT.down();
+    _ = raylib.MouseButton.MIDDLE.released();
+    _ = raylib.MouseButton.LEFT.up();
+    _ = raylib.input.mouse_position();
+    _ = raylib.input.mouse_delta();
 }
 
 // Touches texture functions without requiring the test to load a real asset.
@@ -143,16 +123,15 @@ fn use_module_api() void {
     tex.unload();
     image.unload();
 
-    raylib.audio.init_audio_device();
-    _ = raylib.audio.is_audio_device_ready();
-    raylib.audio.set_master_volume(1.0);
+    let audio = raylib.audio.open().volume(1.0);
+    _ = audio.is_ready();
+    _ = audio.current_volume();
     let sound = raylib.audio.load_sound("missing.wav\0")..&;
     _ = sound.is_valid();
-    sound.set_volume(0.5);
-    sound.play();
+    sound.set_volume(0.5).play();
     sound.stop();
     sound.unload();
-    raylib.audio.close_audio_device();
+    audio.close();
 }
 
 // Entry point for the compile-only test.

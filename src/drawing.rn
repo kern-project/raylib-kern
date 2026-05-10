@@ -4,8 +4,25 @@
 //! `end_drawing()`, or inside one of the nested mode pairs such as
 //! `begin_mode_2d()` / `end_mode_2d()`. CPU-side image drawing lives in the
 //! images module; textured sprites live in the textures module.
+//!
+//! ## Frame handles
+//!
+//! The most Kern-shaped path is to draw through `Frame`, not by repeating module
+//! calls:
+//!
+//! ```kern
+//! window.frame()
+//!     .clear(raylib.RAYWHITE)
+//!     .text("ready\0", 20, 20, 24, raylib.DARKGRAY)
+//!     .fps(10, 10)
+//!     .end();
+//! ```
+//!
+//! `Frame.end()` must be called exactly once for each frame. It swaps buffers,
+//! applies the target FPS cap, and polls input events for the next loop.
 
 use ..raw;
+use ..internal.z_ptr;
 use ..types.{
     BlendMode,
     Camera2D,
@@ -19,6 +36,29 @@ use ..types.{
     VrDeviceInfo,
     VrStereoConfig,
 };
+
+/// A drawing capability for the active frame.
+///
+/// `Frame` is intentionally a zero-sized handle. raylib stores the actual frame
+/// state globally, while the handle makes user code express the begin/end
+/// boundary as ordinary method flow.
+pub struct Frame {};
+
+/// Starts a frame and returns its drawing capability.
+///
+/// Prefer this over manually pairing `begin_drawing()` / `end_drawing()` in
+/// application code:
+///
+/// ```kern
+/// raylib.drawing.frame()
+///     .clear(raylib.RAYWHITE)
+///     .text("hello\0", 20, 20, 24, raylib.DARKGRAY)
+///     .end();
+/// ```
+pub fn frame() Frame {
+    raw.BeginDrawing();
+    return .{};
+}
 
 /// Starts drawing into the current frame buffer. A normal frame has exactly one
 /// begin/end pair, with all draw calls placed between them.
@@ -35,6 +75,111 @@ pub fn end_drawing() void {
 /// Clears the current frame buffer.
 pub fn clear_background(color: Color) void {
     raw.ClearBackground(color);
+}
+
+impl Frame {
+    /// Clears the current framebuffer and keeps the frame handle for chaining.
+    pub fn clear(color: Color) Frame {
+        raw.ClearBackground(color);
+        return self;
+    }
+
+    /// Draws raylib's debug FPS overlay and keeps the frame handle for chaining.
+    pub fn fps(x: i32, y: i32) Frame {
+        raw.DrawFPS(x, y);
+        return self;
+    }
+
+    /// Draws a single pixel and keeps the frame handle for chaining.
+    pub fn pixel(x: i32, y: i32, color: Color) Frame {
+        raw.DrawPixel(x, y, color);
+        return self;
+    }
+
+    /// Draws a line between integer screen positions.
+    pub fn line(start_x: i32, start_y: i32, end_x: i32, end_y: i32, color: Color) Frame {
+        raw.DrawLine(
+            start_x,
+            start_y,
+            end_x,
+            end_y,
+            color,
+        );
+        return self;
+    }
+
+    /// Draws a line between vector screen positions.
+    pub fn line_between(start: Vector2, end: Vector2, color: Color) Frame {
+        raw.DrawLineV(start, end, color);
+        return self;
+    }
+
+    /// Draws a filled circle.
+    pub fn circle(x: i32, y: i32, radius: f32, color: Color) Frame {
+        raw.DrawCircle(
+            x,
+            y,
+            radius,
+            color,
+        );
+        return self;
+    }
+
+    /// Draws a filled circle from a vector center.
+    pub fn circle_at(center: Vector2, radius: f32, color: Color) Frame {
+        raw.DrawCircleV(center, radius, color);
+        return self;
+    }
+
+    /// Draws a filled rectangle.
+    pub fn rect(x: i32, y: i32, width: i32, height: i32, color: Color) Frame {
+        raw.DrawRectangle(
+            x,
+            y,
+            width,
+            height,
+            color,
+        );
+        return self;
+    }
+
+    /// Draws a filled rectangle from a `Rectangle` value.
+    pub fn rect_rec(rect: Rectangle, color: Color) Frame {
+        raw.DrawRectangleRec(rect, color);
+        return self;
+    }
+
+    /// Draws rectangle outlines.
+    pub fn rect_lines(x: i32, y: i32, width: i32, height: i32, color: Color) Frame {
+        raw.DrawRectangleLines(
+            x,
+            y,
+            width,
+            height,
+            color,
+        );
+        return self;
+    }
+
+    /// Draws zero-terminated text with raylib's default font.
+    pub fn text(text_z: &[u8], x: i32, y: i32, font_size: i32, color: Color) Frame {
+        raw.DrawText(
+            z_ptr(text_z),
+            x,
+            y,
+            font_size,
+            color,
+        );
+        return self;
+    }
+
+    /// Finishes this frame.
+    ///
+    /// This is the method counterpart to `end_drawing()`. After it returns, the
+    /// next input sample belongs to the next frame.
+    pub fn end() void {
+        raw.EndDrawing();
+    }
 }
 
 /// Starts drawing with a 2D camera transform.
@@ -897,4 +1042,103 @@ pub fn check_collision_lines(
 /// Returns the overlap rectangle for two colliding rectangles.
 pub fn get_collision_rec(rec1: Rectangle, rec2: Rectangle) Rectangle {
     return raw.GetCollisionRec(rec1, rec2);
+}
+
+impl Vector2 {
+    /// Draws this point as one screen pixel.
+    pub fn draw_pixel(color: Color) void {
+        raw.DrawPixelV(self, color);
+    }
+
+    /// Draws a filled circle centered on this point.
+    pub fn draw_circle(radius: f32, color: Color) void {
+        raw.DrawCircleV(self, radius, color);
+    }
+
+    /// Draws a line from this point to `end`.
+    pub fn draw_line_to(end: Vector2, color: Color) void {
+        raw.DrawLineV(self, end, color);
+    }
+
+    /// Draws a thick line from this point to `end`.
+    pub fn draw_line_ex(end: Vector2, thick: f32, color: Color) void {
+        raw.DrawLineEx(
+            self,
+            end,
+            thick,
+            color,
+        );
+    }
+
+    /// Returns true when this point is inside `rect`.
+    pub fn inside_rect(rect: Rectangle) bool {
+        return raw.CheckCollisionPointRec(self, rect);
+    }
+
+    /// Returns true when this point is inside the circle.
+    pub fn inside_circle(center: Vector2, radius: f32) bool {
+        return raw.CheckCollisionPointCircle(self, center, radius);
+    }
+
+    /// Returns true when this point is inside the triangle.
+    pub fn inside_triangle(p1: Vector2, p2: Vector2, p3: Vector2) bool {
+        return raw.CheckCollisionPointTriangle(
+            self,
+            p1,
+            p2,
+            p3,
+        );
+    }
+
+    /// Returns true when this point is near the line segment.
+    pub fn near_line(p1: Vector2, p2: Vector2, threshold: i32) bool {
+        return raw.CheckCollisionPointLine(
+            self,
+            p1,
+            p2,
+            threshold,
+        );
+    }
+}
+
+impl Rectangle {
+    /// Draws this rectangle filled with `color`.
+    pub fn draw(color: Color) void {
+        raw.DrawRectangleRec(self, color);
+    }
+
+    /// Draws this rectangle around `origin` with rotation.
+    pub fn draw_pro(origin: Vector2, rotation: f32, color: Color) void {
+        raw.DrawRectanglePro(
+            self,
+            origin,
+            rotation,
+            color,
+        );
+    }
+
+    /// Draws this rectangle's outline.
+    pub fn draw_lines(thick: f32, color: Color) void {
+        raw.DrawRectangleLinesEx(self, thick, color);
+    }
+
+    /// Returns true when this rectangle overlaps `other`.
+    pub fn overlaps(other: Rectangle) bool {
+        return raw.CheckCollisionRecs(self, other);
+    }
+
+    /// Returns the overlap rectangle between this rectangle and `other`.
+    pub fn overlap(other: Rectangle) Rectangle {
+        return raw.GetCollisionRec(self, other);
+    }
+
+    /// Returns true when `point` is inside this rectangle.
+    pub fn contains(point: Vector2) bool {
+        return raw.CheckCollisionPointRec(point, self);
+    }
+
+    /// Returns true when the circle overlaps this rectangle.
+    pub fn overlaps_circle(center: Vector2, radius: f32) bool {
+        return raw.CheckCollisionCircleRec(center, radius, self);
+    }
 }

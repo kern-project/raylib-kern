@@ -3,6 +3,17 @@
 //! Text drawing uses GPU font textures, so custom fonts should be loaded after
 //! `init_window()` and released before `close_window()`. Most string parameters
 //! are zero-terminated byte slices because raylib's C API reads `char *`.
+//!
+//! ## Text as a capability receiver
+//!
+//! Kern's standard library favors receivers such as
+//! `"hello, {}".fmt(.{"world"}).println()`. This module follows that style for
+//! default-font text:
+//!
+//! ```kern
+//! "ready\0".draw(20, 20, 24, raylib.DARKGRAY);
+//! let width = "ready\0".measure(24);
+//! ```
 
 use ..raw;
 use ..internal.z_ptr;
@@ -231,6 +242,26 @@ pub fn set_text_line_spacing(spacing: i32) void {
 /// Returns the width in pixels for layout with the default font.
 pub fn measure_text(text_z: &[u8], font_size: i32) i32 {
     return raw.MeasureText(z_ptr(text_z), font_size);
+}
+
+impl &[u8] {
+    /// Draws this zero-terminated byte text with raylib's default font.
+    ///
+    /// The receiver must include the trailing `\0` expected by raylib's C API.
+    pub fn draw(x: i32, y: i32, font_size: i32, color: Color) void {
+        raw.DrawText(
+            z_ptr(self),
+            x,
+            y,
+            font_size,
+            color,
+        );
+    }
+
+    /// Measures this zero-terminated byte text with raylib's default font.
+    pub fn measure(font_size: i32) i32 {
+        return raw.MeasureText(z_ptr(self), font_size);
+    }
 }
 
 /// Measures text drawn with a font.
