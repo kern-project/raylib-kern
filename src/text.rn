@@ -51,11 +51,6 @@ pub fn load_font_ex(
     );
 }
 
-/// Loads a font from an image using a key color and first codepoint.
-pub fn load_font_from_image(image: Image, key: Color, first_char: i32) Font {
-    return raw.LoadFontFromImage(image, key, first_char);
-}
-
 /// Loads a font from memory. `file_type` is an extension such as `".ttf\0"`.
 pub fn load_font_from_memory(
     file_type: &[u8],
@@ -73,11 +68,6 @@ pub fn load_font_from_memory(
         codepoints,
         codepoint_count,
     );
-}
-
-/// Returns true when font metadata has loaded.
-pub fn is_font_valid(font: Font) bool {
-    return raw.IsFontValid(font);
 }
 
 /// Loads glyph info without creating a full `Font`.
@@ -125,123 +115,14 @@ pub fn unload_font_data(glyphs: &mut GlyphInfo, glyph_count: i32) void {
     raw.UnloadFontData(glyphs, glyph_count);
 }
 
-/// Releases a font and its GPU texture.
-pub fn unload_font(font: Font) void {
-    raw.UnloadFont(font);
-}
-
-/// Writes a font as generated C code.
-pub fn export_font_as_code(font: Font, file_name: &[u8]) bool {
-    return raw.ExportFontAsCode(font, z_ptr(file_name));
-}
-
 /// Draws raylib's current FPS overlay.
 pub fn draw_fps(x: i32, y: i32) void {
     raw.DrawFPS(x, y);
 }
 
-/// Draws text with raylib's default font.
-///
-/// The default font is prepared by `init_window()`, and the string must be
-/// zero-terminated for the C API.
-pub fn draw_text(text_z: &[u8], x: i32, y: i32, font_size: i32, color: Color) void {
-    raw.DrawText(
-        z_ptr(text_z),
-        x,
-        y,
-        font_size,
-        color,
-    );
-}
-
-/// Draws text with an explicit font, fractional position, and custom spacing.
-pub fn draw_text_ex(
-    font: Font,
-    text_z: &[u8],
-    position: Vector2,
-    font_size: f32,
-    spacing: f32,
-    tint: Color,
-) void {
-    raw.DrawTextEx(
-        font,
-        z_ptr(text_z),
-        position,
-        font_size,
-        spacing,
-        tint,
-    );
-}
-
-/// Draws text with rotation and a custom origin.
-pub fn draw_text_pro(
-    font: Font,
-    text_z: &[u8],
-    position: Vector2,
-    origin: Vector2,
-    rotation: f32,
-    font_size: f32,
-    spacing: f32,
-    tint: Color,
-) void {
-    raw.DrawTextPro(
-        font,
-        z_ptr(text_z),
-        position,
-        origin,
-        rotation,
-        font_size,
-        spacing,
-        tint,
-    );
-}
-
-/// Draws one Unicode codepoint with a font.
-pub fn draw_text_codepoint(
-    font: Font,
-    codepoint: i32,
-    position: Vector2,
-    font_size: f32,
-    tint: Color,
-) void {
-    raw.DrawTextCodepoint(
-        font,
-        codepoint,
-        position,
-        font_size,
-        tint,
-    );
-}
-
-/// Draws multiple Unicode codepoints with a font.
-pub fn draw_text_codepoints(
-    font: Font,
-    codepoints: &mut i32,
-    codepoint_count: i32,
-    position: Vector2,
-    font_size: f32,
-    spacing: f32,
-    tint: Color,
-) void {
-    raw.DrawTextCodepoints(
-        font,
-        codepoints,
-        codepoint_count,
-        position,
-        font_size,
-        spacing,
-        tint,
-    );
-}
-
 /// Sets vertical line spacing used when text contains line breaks.
 pub fn set_text_line_spacing(spacing: i32) void {
     raw.SetTextLineSpacing(spacing);
-}
-
-/// Returns the width in pixels for layout with the default font.
-pub fn measure_text(text_z: &[u8], font_size: i32) i32 {
-    return raw.MeasureText(z_ptr(text_z), font_size);
 }
 
 impl &[u8] {
@@ -262,48 +143,290 @@ impl &[u8] {
     pub fn measure(font_size: i32) i32 {
         return raw.MeasureText(z_ptr(self), font_size);
     }
+
+    /// Returns the number of UTF-8 codepoints in this zero-terminated text.
+    pub fn codepoint_count() i32 {
+        return raw.GetCodepointCount(z_ptr(self));
+    }
+
+    /// Returns the byte length up to this text's terminating zero.
+    pub fn z_len() u32 {
+        return raw.TextLength(z_ptr(self));
+    }
+
+    /// Returns true when this zero-terminated text equals `other`.
+    pub fn text_eq(other: &[u8]) bool {
+        return raw.TextIsEqual(z_ptr(self), z_ptr(other));
+    }
+
+    /// Finds the first occurrence of `search`, returning `-1` when absent.
+    pub fn find_text(search: &[u8]) i32 {
+        return raw.TextFindIndex(z_ptr(self), z_ptr(search));
+    }
+
+    /// Parses this zero-terminated text as an integer using raylib's parser.
+    pub fn to_integer() i32 {
+        return raw.TextToInteger(z_ptr(self));
+    }
+
+    /// Parses this zero-terminated text as a float using raylib's parser.
+    pub fn to_float() f32 {
+        return raw.TextToFloat(z_ptr(self));
+    }
+
+    /// Decodes all codepoints from this UTF-8 text and writes the count.
+    pub fn codepoints(count: &mut i32) &mut i32 {
+        return raw.LoadCodepoints(z_ptr(self), count);
+    }
+
+    /// Decodes the current UTF-8 codepoint and writes its byte size.
+    pub fn codepoint(codepoint_size: &mut i32) i32 {
+        return raw.GetCodepoint(z_ptr(self), codepoint_size);
+    }
+
+    /// Decodes the next UTF-8 codepoint and writes its byte size.
+    pub fn next_codepoint(codepoint_size: &mut i32) i32 {
+        return raw.GetCodepointNext(z_ptr(self), codepoint_size);
+    }
+
+    /// Decodes the previous UTF-8 codepoint and writes its byte size.
+    pub fn previous_codepoint(codepoint_size: &mut i32) i32 {
+        return raw.GetCodepointPrevious(z_ptr(self), codepoint_size);
+    }
+
+    /// Splits this text into raylib-owned line pointers.
+    pub fn lines(count: &mut i32) &mut &u8 {
+        return raw.LoadTextLines(z_ptr(self), count);
+    }
+
+    /// Copies this text into `dst`.
+    pub fn copy_to(dst: &[u8]) i32 {
+        return raw.TextCopy(z_ptr(dst), z_ptr(self));
+    }
+
+    /// Returns a raylib-owned substring pointer.
+    pub fn subtext(position: i32, length: i32) &u8 {
+        return raw.TextSubtext(z_ptr(self), position, length);
+    }
+
+    /// Returns raylib-owned text with spaces removed.
+    pub fn without_spaces() &u8 {
+        return raw.TextRemoveSpaces(z_ptr(self));
+    }
+
+    /// Returns text between two delimiters.
+    pub fn between(begin: &[u8], end: &[u8]) &u8 {
+        return raw.GetTextBetween(z_ptr(self), z_ptr(begin), z_ptr(end));
+    }
+
+    /// Replaces text using raylib's non-allocating text buffer.
+    pub fn replace(search: &[u8], replacement: &[u8]) &u8 {
+        return raw.TextReplace(z_ptr(self), z_ptr(search), z_ptr(replacement));
+    }
+
+    /// Replaces text and returns allocated memory; release it with `mem_free()`.
+    pub fn replace_alloc(search: &[u8], replacement: &[u8]) &u8 {
+        return raw.TextReplaceAlloc(z_ptr(self), z_ptr(search), z_ptr(replacement));
+    }
+
+    /// Replaces text between delimiters using raylib's non-allocating text buffer.
+    pub fn replace_between(begin: &[u8], end: &[u8], replacement: &[u8]) &u8 {
+        return raw.TextReplaceBetween(
+            z_ptr(self),
+            z_ptr(begin),
+            z_ptr(end),
+            z_ptr(replacement),
+        );
+    }
+
+    /// Replaces text between delimiters and returns allocated memory.
+    pub fn replace_between_alloc(begin: &[u8], end: &[u8], replacement: &[u8]) &u8 {
+        return raw.TextReplaceBetweenAlloc(
+            z_ptr(self),
+            z_ptr(begin),
+            z_ptr(end),
+            z_ptr(replacement),
+        );
+    }
+
+    /// Inserts text using raylib's non-allocating text buffer.
+    pub fn insert(insert: &[u8], position: i32) &u8 {
+        return raw.TextInsert(z_ptr(self), z_ptr(insert), position);
+    }
+
+    /// Inserts text and returns allocated memory; release it with `mem_free()`.
+    pub fn insert_alloc(insert: &[u8], position: i32) &u8 {
+        return raw.TextInsertAlloc(z_ptr(self), z_ptr(insert), position);
+    }
+
+    /// Splits this text into raylib's static split buffer.
+    pub fn split(delimiter: u8, count: &mut i32) &mut &u8 {
+        return raw.TextSplit(z_ptr(self), delimiter, count);
+    }
+
+    /// Appends text at a mutable cursor position.
+    pub fn append(append: &[u8], position: &mut i32) void {
+        raw.TextAppend(z_ptr(self), z_ptr(append), position);
+    }
+
+    /// Returns uppercase text in raylib-owned storage.
+    pub fn to_upper() &u8 {
+        return raw.TextToUpper(z_ptr(self));
+    }
+
+    /// Returns lowercase text in raylib-owned storage.
+    pub fn to_lower() &u8 {
+        return raw.TextToLower(z_ptr(self));
+    }
+
+    /// Returns PascalCase text in raylib-owned storage.
+    pub fn to_pascal() &u8 {
+        return raw.TextToPascal(z_ptr(self));
+    }
+
+    /// Returns snake_case text in raylib-owned storage.
+    pub fn to_snake() &u8 {
+        return raw.TextToSnake(z_ptr(self));
+    }
+
+    /// Returns camelCase text in raylib-owned storage.
+    pub fn to_camel() &u8 {
+        return raw.TextToCamel(z_ptr(self));
+    }
 }
 
-/// Measures text drawn with a font.
-pub fn measure_text_ex(font: Font, text_z: &[u8], font_size: f32, spacing: f32) Vector2 {
-    return raw.MeasureTextEx(
-        font,
-        z_ptr(text_z),
-        font_size,
-        spacing,
-    );
+impl Image {
+    /// Builds a font from this image using a key color and first codepoint.
+    pub fn to_font(key: Color, first_char: i32) Font {
+        return raw.LoadFontFromImage(self, key, first_char);
+    }
 }
 
-/// Measures codepoints drawn with a font.
-pub fn measure_text_codepoints(
-    font: Font,
-    codepoints: &mut i32,
-    length: i32,
-    font_size: f32,
-    spacing: f32,
-) Vector2 {
-    return raw.MeasureTextCodepoints(
-        font,
-        codepoints,
-        length,
-        font_size,
-        spacing,
-    );
-}
+impl Font {
+    /// Returns true when this font metadata has loaded.
+    pub fn is_valid() bool {
+        return raw.IsFontValid(self);
+    }
 
-/// Returns the glyph index for a codepoint, falling back as raylib does.
-pub fn get_glyph_index(font: Font, codepoint: i32) i32 {
-    return raw.GetGlyphIndex(font, codepoint);
-}
+    /// Releases this font and its GPU texture.
+    pub fn unload() void {
+        raw.UnloadFont(self);
+    }
 
-/// Returns glyph metadata for a codepoint.
-pub fn get_glyph_info(font: Font, codepoint: i32) GlyphInfo {
-    return raw.GetGlyphInfo(font, codepoint);
-}
+    /// Writes this font as generated C code.
+    pub fn export_as_code(file_name: &[u8]) bool {
+        return raw.ExportFontAsCode(self, z_ptr(file_name));
+    }
 
-/// Returns a codepoint's rectangle inside the font atlas.
-pub fn get_glyph_atlas_rec(font: Font, codepoint: i32) Rectangle {
-    return raw.GetGlyphAtlasRec(font, codepoint);
+    /// Draws zero-terminated text with this font.
+    pub fn draw(text_z: &[u8], position: Vector2, font_size: f32, spacing: f32, tint: Color) Font {
+        raw.DrawTextEx(
+            self,
+            z_ptr(text_z),
+            position,
+            font_size,
+            spacing,
+            tint,
+        );
+        return self;
+    }
+
+    /// Draws zero-terminated text with rotation and a custom origin.
+    pub fn draw_pro(
+        text_z: &[u8],
+        position: Vector2,
+        origin: Vector2,
+        rotation: f32,
+        font_size: f32,
+        spacing: f32,
+        tint: Color,
+    ) Font {
+        raw.DrawTextPro(
+            self,
+            z_ptr(text_z),
+            position,
+            origin,
+            rotation,
+            font_size,
+            spacing,
+            tint,
+        );
+        return self;
+    }
+
+    /// Draws one Unicode codepoint with this font.
+    pub fn draw_codepoint(codepoint: i32, position: Vector2, font_size: f32, tint: Color) Font {
+        raw.DrawTextCodepoint(
+            self,
+            codepoint,
+            position,
+            font_size,
+            tint,
+        );
+        return self;
+    }
+
+    /// Draws multiple Unicode codepoints with this font.
+    pub fn draw_codepoints(
+        codepoints: &mut i32,
+        codepoint_count: i32,
+        position: Vector2,
+        font_size: f32,
+        spacing: f32,
+        tint: Color,
+    ) Font {
+        raw.DrawTextCodepoints(
+            self,
+            codepoints,
+            codepoint_count,
+            position,
+            font_size,
+            spacing,
+            tint,
+        );
+        return self;
+    }
+
+    /// Measures zero-terminated text with this font.
+    pub fn measure(text_z: &[u8], font_size: f32, spacing: f32) Vector2 {
+        return raw.MeasureTextEx(
+            self,
+            z_ptr(text_z),
+            font_size,
+            spacing,
+        );
+    }
+
+    /// Measures Unicode codepoints with this font.
+    pub fn measure_codepoints(
+        codepoints: &mut i32,
+        length: i32,
+        font_size: f32,
+        spacing: f32,
+    ) Vector2 {
+        return raw.MeasureTextCodepoints(
+            self,
+            codepoints,
+            length,
+            font_size,
+            spacing,
+        );
+    }
+
+    /// Returns the glyph index for a codepoint, falling back as raylib does.
+    pub fn glyph_index(codepoint: i32) i32 {
+        return raw.GetGlyphIndex(self, codepoint);
+    }
+
+    /// Returns glyph metadata for a codepoint.
+    pub fn glyph_info(codepoint: i32) GlyphInfo {
+        return raw.GetGlyphInfo(self, codepoint);
+    }
+
+    /// Returns a codepoint's rectangle inside this font's atlas.
+    pub fn glyph_atlas_rec(codepoint: i32) Rectangle {
+        return raw.GetGlyphAtlasRec(self, codepoint);
+    }
 }
 
 /// Encodes an array of codepoints as UTF-8 text.
@@ -316,34 +439,9 @@ pub fn unload_utf8(text: &[u8]) void {
     raw.UnloadUTF8(z_ptr(text));
 }
 
-/// Decodes all codepoints from UTF-8 text and writes the count.
-pub fn load_codepoints(text: &[u8], count: &mut i32) &mut i32 {
-    return raw.LoadCodepoints(z_ptr(text), count);
-}
-
 /// Releases codepoints returned by `load_codepoints()`.
 pub fn unload_codepoints(codepoints: &mut i32) void {
     raw.UnloadCodepoints(codepoints);
-}
-
-/// Returns the number of codepoints in UTF-8 text.
-pub fn get_codepoint_count(text: &[u8]) i32 {
-    return raw.GetCodepointCount(z_ptr(text));
-}
-
-/// Decodes the current UTF-8 codepoint and writes its byte size.
-pub fn get_codepoint(text: &[u8], codepoint_size: &mut i32) i32 {
-    return raw.GetCodepoint(z_ptr(text), codepoint_size);
-}
-
-/// Decodes the next UTF-8 codepoint and writes its byte size.
-pub fn get_codepoint_next(text: &[u8], codepoint_size: &mut i32) i32 {
-    return raw.GetCodepointNext(z_ptr(text), codepoint_size);
-}
-
-/// Decodes the previous UTF-8 codepoint and writes its byte size.
-pub fn get_codepoint_previous(text: &[u8], codepoint_size: &mut i32) i32 {
-    return raw.GetCodepointPrevious(z_ptr(text), codepoint_size);
 }
 
 /// Encodes one codepoint as UTF-8 and writes the byte size.
@@ -351,137 +449,12 @@ pub fn codepoint_to_utf8(codepoint: i32, utf8_size: &mut i32) &u8 {
     return raw.CodepointToUTF8(codepoint, utf8_size);
 }
 
-/// Splits text into raylib-owned line pointers.
-pub fn load_text_lines(text: &[u8], count: &mut i32) &mut &u8 {
-    return raw.LoadTextLines(z_ptr(text), count);
-}
-
 /// Releases line pointers returned by `load_text_lines()`.
 pub fn unload_text_lines(text: &mut &u8, line_count: i32) void {
     raw.UnloadTextLines(text, line_count);
 }
 
-/// Copies one zero-terminated text buffer into another.
-pub fn text_copy(dst: &[u8], src: &[u8]) i32 {
-    return raw.TextCopy(z_ptr(dst), z_ptr(src));
-}
-
-/// Returns true when two zero-terminated text buffers have equal content.
-pub fn text_is_equal(text1: &[u8], text2: &[u8]) bool {
-    return raw.TextIsEqual(z_ptr(text1), z_ptr(text2));
-}
-
-/// Returns byte length up to the terminating zero.
-pub fn text_length(text: &[u8]) u32 {
-    return raw.TextLength(z_ptr(text));
-}
-
-/// Returns a raylib-owned substring pointer.
-pub fn text_subtext(text: &[u8], position: i32, length: i32) &u8 {
-    return raw.TextSubtext(z_ptr(text), position, length);
-}
-
-/// Returns raylib-owned text with spaces removed.
-pub fn text_remove_spaces(text: &[u8]) &u8 {
-    return raw.TextRemoveSpaces(z_ptr(text));
-}
-
-/// Returns text between two delimiters.
-pub fn get_text_between(text: &[u8], begin: &[u8], end: &[u8]) &u8 {
-    return raw.GetTextBetween(z_ptr(text), z_ptr(begin), z_ptr(end));
-}
-
-/// Replaces text using raylib's non-allocating text buffer.
-pub fn text_replace(text: &[u8], search: &[u8], replacement: &[u8]) &u8 {
-    return raw.TextReplace(z_ptr(text), z_ptr(search), z_ptr(replacement));
-}
-
-/// Replaces text and returns allocated memory; release it with `mem_free()`.
-pub fn text_replace_alloc(text: &[u8], search: &[u8], replacement: &[u8]) &u8 {
-    return raw.TextReplaceAlloc(z_ptr(text), z_ptr(search), z_ptr(replacement));
-}
-
-/// Replaces text between delimiters using raylib's non-allocating text buffer.
-pub fn text_replace_between(text: &[u8], begin: &[u8], end: &[u8], replacement: &[u8]) &u8 {
-    return raw.TextReplaceBetween(
-        z_ptr(text),
-        z_ptr(begin),
-        z_ptr(end),
-        z_ptr(replacement),
-    );
-}
-
-/// Replaces text between delimiters and returns allocated memory.
-pub fn text_replace_between_alloc(text: &[u8], begin: &[u8], end: &[u8], replacement: &[u8]) &u8 {
-    return raw.TextReplaceBetweenAlloc(
-        z_ptr(text),
-        z_ptr(begin),
-        z_ptr(end),
-        z_ptr(replacement),
-    );
-}
-
-/// Inserts text using raylib's non-allocating text buffer.
-pub fn text_insert(text: &[u8], insert: &[u8], position: i32) &u8 {
-    return raw.TextInsert(z_ptr(text), z_ptr(insert), position);
-}
-
-/// Inserts text and returns allocated memory; release it with `mem_free()`.
-pub fn text_insert_alloc(text: &[u8], insert: &[u8], position: i32) &u8 {
-    return raw.TextInsertAlloc(z_ptr(text), z_ptr(insert), position);
-}
-
 /// Joins text pointers with a delimiter.
 pub fn text_join(text_list: &mut &u8, count: i32, delimiter: &[u8]) &u8 {
     return raw.TextJoin(text_list, count, z_ptr(delimiter));
-}
-
-/// Splits text into raylib's static split buffer.
-pub fn text_split(text: &[u8], delimiter: u8, count: &mut i32) &mut &u8 {
-    return raw.TextSplit(z_ptr(text), delimiter, count);
-}
-
-/// Appends text at a mutable cursor position.
-pub fn text_append(text: &[u8], append: &[u8], position: &mut i32) void {
-    raw.TextAppend(z_ptr(text), z_ptr(append), position);
-}
-
-/// Finds the first occurrence of `search`, returning `-1` when absent.
-pub fn text_find_index(text: &[u8], search: &[u8]) i32 {
-    return raw.TextFindIndex(z_ptr(text), z_ptr(search));
-}
-
-/// Returns uppercase text in raylib-owned storage.
-pub fn text_to_upper(text: &[u8]) &u8 {
-    return raw.TextToUpper(z_ptr(text));
-}
-
-/// Returns lowercase text in raylib-owned storage.
-pub fn text_to_lower(text: &[u8]) &u8 {
-    return raw.TextToLower(z_ptr(text));
-}
-
-/// Returns PascalCase text in raylib-owned storage.
-pub fn text_to_pascal(text: &[u8]) &u8 {
-    return raw.TextToPascal(z_ptr(text));
-}
-
-/// Returns snake_case text in raylib-owned storage.
-pub fn text_to_snake(text: &[u8]) &u8 {
-    return raw.TextToSnake(z_ptr(text));
-}
-
-/// Returns camelCase text in raylib-owned storage.
-pub fn text_to_camel(text: &[u8]) &u8 {
-    return raw.TextToCamel(z_ptr(text));
-}
-
-/// Parses text as an integer using raylib's parser.
-pub fn text_to_integer(text: &[u8]) i32 {
-    return raw.TextToInteger(z_ptr(text));
-}
-
-/// Parses text as a float using raylib's parser.
-pub fn text_to_float(text: &[u8]) f32 {
-    return raw.TextToFloat(z_ptr(text));
 }

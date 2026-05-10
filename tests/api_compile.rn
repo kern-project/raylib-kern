@@ -6,6 +6,116 @@ const TITLE = "compile-only\0";
 const TEXT = "hello\0";
 const TEXTURE_PATH = "missing.png\0";
 
+// Locks shader resource methods without requiring a real shader asset.
+fn use_shader_api() void {
+    let shader = raylib.shaders.load_shader("missing.vs\0", "missing.fs\0");
+    _ = shader.is_valid();
+    _ = shader.location("tint\0");
+    _ = shader.attrib_location("position\0");
+    shader.unload();
+}
+
+// Locks custom-font and zero-terminated text receiver methods.
+fn use_text_api() void {
+    let font = raylib.text.load_font("missing.ttf\0");
+    let mut count = 0;
+    let mut size = 0;
+    _ = font.is_valid();
+    _ = font.measure(
+        TEXT,
+        20.0,
+        1.0,
+    );
+    _ = font.glyph_index(65);
+    _ = TEXT.codepoint_count();
+    _ = TEXT.z_len();
+    _ = TEXT.text_eq(TEXT);
+    _ = TEXT.find_text("ll\0");
+    _ = "42\0".to_integer();
+    _ = "3.5\0".to_float();
+    _ = TEXT.codepoints(count..&);
+    _ = TEXT.codepoint(size..&);
+    _ = TEXT.next_codepoint(size..&);
+    _ = TEXT.previous_codepoint(size..&);
+    _ = TEXT.subtext(0, 2);
+    _ = "hello world\0".without_spaces();
+    _ = TEXT.between("h\0", "o\0");
+    _ = TEXT.replace("h\0", "H\0");
+    _ = TEXT.insert("!\0", 5);
+    _ = TEXT.split(u8.{44}, count..&);
+    _ = TEXT.to_snake();
+    _ = TEXT.to_camel();
+    _ = font.draw(
+        TEXT,
+        raylib.vector2(0.0, 0.0),
+        20.0,
+        1.0,
+        raylib.WHITE,
+    );
+    font.unload();
+}
+
+// Locks model, mesh, material, and 3D collision receiver methods.
+fn use_model_api() void {
+    let pos = raylib.vector3(0.0, 0.0, 0.0);
+    let axis = raylib.vector3(0.0, 1.0, 0.0);
+    let scale = raylib.vector3(1.0, 1.0, 1.0);
+    pos.draw_point(raylib.WHITE);
+    pos.draw_line_to(axis, raylib.WHITE);
+    pos.draw_box(
+        1.0,
+        1.0,
+        1.0,
+        raylib.WHITE,
+    );
+    pos.draw_box_size(scale, raylib.WHITE);
+    pos.draw_sphere(1.0, raylib.WHITE);
+    pos.draw_cylinder(
+        1.0,
+        1.0,
+        2.0,
+        8,
+        raylib.WHITE,
+    );
+    pos.draw_cylinder_to(
+        axis,
+        1.0,
+        1.0,
+        8,
+        raylib.WHITE,
+    );
+    pos.draw_capsule_to(
+        axis,
+        1.0,
+        8,
+        8,
+        raylib.WHITE,
+    );
+    pos.draw_plane(raylib.vector2(1.0, 1.0), raylib.WHITE);
+    _ = pos.sphere_overlaps(1.0, axis, 1.0);
+    let model = raylib.models.load_model("missing.glb\0");
+    _ = model.is_valid();
+    model.draw(pos, 1.0, raylib.WHITE);
+    model.draw_ex(
+        pos,
+        axis,
+        0.0,
+        scale,
+        raylib.WHITE,
+    );
+    let bounds = model.bounding_box();
+    bounds.draw(raylib.GREEN);
+    _ = bounds.overlaps(bounds);
+    model.unload();
+
+    let mesh = raylib.models.gen_mesh_cube(1.0, 1.0, 1.0)..&;
+    mesh.gen_tangents();
+    let material = raylib.models.load_material_default()..&;
+    _ = material.is_valid();
+    material.unload();
+    mesh.unload();
+}
+
 // Touches window functions without relying on a real interactive window.
 fn use_window_api() void {
     let win = raylib.window.open(640, 480, TITLE)
@@ -48,12 +158,37 @@ fn use_drawing_api() void {
     _ = size;
     p.draw_pixel(raylib.RED);
     p.draw_circle(8.0, raylib.BLUE);
+    p.draw_circle_lines(8.0, raylib.BLUE);
+    p.draw_circle_gradient(8.0, raylib.WHITE, raylib.BLACK);
     p.draw_line_to(q, raylib.GREEN);
+    p.draw_line_bezier_to(q, 2.0, raylib.GREEN);
+    p.draw_line_dashed_to(
+        q,
+        2,
+        2,
+        raylib.GREEN,
+    );
+    p.draw_rect(size, raylib.GRAY);
+    p.draw_poly(
+        6,
+        8.0,
+        0.0,
+        raylib.BLUE,
+    );
     rec.draw(raylib.BLACK);
     rec.draw_lines(1.0, raylib.WHITE);
+    rec.draw_gradient(
+        raylib.WHITE,
+        raylib.GRAY,
+        raylib.BLACK,
+        raylib.RAYWHITE,
+    );
+    rec.draw_rounded(0.2, 8, raylib.BLUE);
     _ = rec.contains(p);
     _ = rec.overlaps(rec);
     _ = p.inside_rect(rec);
+    _ = p.circle_overlaps(8.0, q, 8.0);
+    _ = p.spline_linear_to(q, 0.5);
     let _ = TEXT.measure(20);
 }
 
@@ -117,9 +252,19 @@ fn use_module_api() void {
     let tex = image.to_texture();
     _ = tex.is_valid();
     tex.draw_rec(rec, pos, raylib.WHITE);
-    _ = raylib.text.measure_text(TEXT, 20);
-    _ = raylib.input.get_mouse_position();
-    _ = raylib.files.file_exists(TEXTURE_PATH);
+    _ = TEXT.measure(20);
+    _ = raylib.input.mouse_position();
+    _ = TEXTURE_PATH.file_exists();
+    _ = TEXTURE_PATH.has_extension(".png\0");
+    _ = TEXTURE_PATH.file_name();
+    let paths = ".\0".directory_files();
+    _ = paths.len();
+    _ = paths.is_empty();
+    paths.unload_directory();
+    _ = ".\0".directory_files_ex("*\0", false);
+    _ = ".\0".directory_file_count();
+    _ = ".\0".directory_file_count_ex("*\0", false);
+    _ = ".\0".prev_directory_path();
     tex.unload();
     image.unload();
 
@@ -144,6 +289,9 @@ fn main() i32 {
         use_input_api();
         use_texture_api();
         use_module_api();
+        use_shader_api();
+        use_text_api();
+        use_model_api();
     }
     return 0;
 }

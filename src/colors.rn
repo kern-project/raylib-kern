@@ -37,69 +37,14 @@ pub const fn color(r: u8, g: u8, b: u8, a: u8) Color {
     return .{ r: r, g: g, b: b, a: a };
 }
 
-/// Returns true when two colors have identical channels.
-pub fn color_is_equal(col1: Color, col2: Color) bool {
-    return raw.ColorIsEqual(col1, col2);
-}
-
-/// Applies alpha to a color.
-pub fn fade(color: Color, alpha: f32) Color {
-    return raw.Fade(color, alpha);
-}
-
-/// Packs a color into raylib's integer representation.
-pub fn color_to_int(color: Color) i32 {
-    return raw.ColorToInt(color);
-}
-
-/// Converts color channels to normalized floats.
-pub fn color_normalize(color: Color) Vector4 {
-    return raw.ColorNormalize(color);
-}
-
 /// Converts normalized float channels to a color.
 pub fn color_from_normalized(normalized: Vector4) Color {
     return raw.ColorFromNormalized(normalized);
 }
 
-/// Converts RGB color to HSV.
-pub fn color_to_hsv(color: Color) Vector3 {
-    return raw.ColorToHSV(color);
-}
-
 /// Converts HSV values to RGB color.
 pub fn color_from_hsv(hue: f32, saturation: f32, value: f32) Color {
     return raw.ColorFromHSV(hue, saturation, value);
-}
-
-/// Tints a color with another color.
-pub fn color_tint(color: Color, tint: Color) Color {
-    return raw.ColorTint(color, tint);
-}
-
-/// Adjusts color brightness.
-pub fn color_brightness(color: Color, factor: f32) Color {
-    return raw.ColorBrightness(color, factor);
-}
-
-/// Adjusts color contrast.
-pub fn color_contrast(color: Color, contrast: f32) Color {
-    return raw.ColorContrast(color, contrast);
-}
-
-/// Replaces a color's alpha channel.
-pub fn color_alpha(color: Color, alpha: f32) Color {
-    return raw.ColorAlpha(color, alpha);
-}
-
-/// Alpha-blends two colors and applies a tint.
-pub fn color_alpha_blend(dst: Color, src: Color, tint: Color) Color {
-    return raw.ColorAlphaBlend(dst, src, tint);
-}
-
-/// Linearly interpolates between two colors.
-pub fn color_lerp(color1: Color, color2: Color, factor: f32) Color {
-    return raw.ColorLerp(color1, color2, factor);
 }
 
 /// Builds a color from a hexadecimal `0xRRGGBBAA` style value.

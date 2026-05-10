@@ -24,119 +24,14 @@ pub fn mem_free(ptr: &mut void) void {
     raw.MemFree(ptr);
 }
 
-/// Loads a whole file as bytes and writes the byte count.
-pub fn load_file_data(file_name: &[u8], data_size: &mut i32) &u8 {
-    return raw.LoadFileData(z_ptr(file_name), data_size);
-}
-
 /// Releases bytes returned by `load_file_data()`.
 pub fn unload_file_data(data: &u8) void {
     raw.UnloadFileData(data);
 }
 
-/// Saves bytes to a file.
-pub fn save_file_data(file_name: &[u8], data: &mut void, data_size: i32) bool {
-    return raw.SaveFileData(z_ptr(file_name), data, data_size);
-}
-
-/// Exports bytes as generated C code.
-pub fn export_data_as_code(data: &u8, data_size: i32, file_name: &[u8]) bool {
-    return raw.ExportDataAsCode(data, data_size, z_ptr(file_name));
-}
-
-/// Loads a whole file as zero-terminated text.
-pub fn load_file_text(file_name: &[u8]) &u8 {
-    return raw.LoadFileText(z_ptr(file_name));
-}
-
 /// Releases text returned by `load_file_text()`.
 pub fn unload_file_text(text: &[u8]) void {
     raw.UnloadFileText(z_ptr(text));
-}
-
-/// Saves zero-terminated text to a file.
-pub fn save_file_text(file_name: &[u8], text: &[u8]) bool {
-    return raw.SaveFileText(z_ptr(file_name), z_ptr(text));
-}
-
-/// Renames a file.
-pub fn file_rename(file_name: &[u8], file_rename: &[u8]) i32 {
-    return raw.FileRename(z_ptr(file_name), z_ptr(file_rename));
-}
-
-/// Removes a file.
-pub fn file_remove(file_name: &[u8]) i32 {
-    return raw.FileRemove(z_ptr(file_name));
-}
-
-/// Copies a file.
-pub fn file_copy(src_path: &[u8], dst_path: &[u8]) i32 {
-    return raw.FileCopy(z_ptr(src_path), z_ptr(dst_path));
-}
-
-/// Moves a file.
-pub fn file_move(src_path: &[u8], dst_path: &[u8]) i32 {
-    return raw.FileMove(z_ptr(src_path), z_ptr(dst_path));
-}
-
-/// Replaces text in a file.
-pub fn file_text_replace(file_name: &[u8], search: &[u8], replacement: &[u8]) i32 {
-    return raw.FileTextReplace(z_ptr(file_name), z_ptr(search), z_ptr(replacement));
-}
-
-/// Finds text in a file.
-pub fn file_text_find_index(file_name: &[u8], search: &[u8]) i32 {
-    return raw.FileTextFindIndex(z_ptr(file_name), z_ptr(search));
-}
-
-/// Returns true when a file exists.
-pub fn file_exists(file_name: &[u8]) bool {
-    return raw.FileExists(z_ptr(file_name));
-}
-
-/// Returns true when a directory exists.
-pub fn directory_exists(dir_path: &[u8]) bool {
-    return raw.DirectoryExists(z_ptr(dir_path));
-}
-
-/// Returns true when a file has the requested extension.
-pub fn is_file_extension(file_name: &[u8], ext: &[u8]) bool {
-    return raw.IsFileExtension(z_ptr(file_name), z_ptr(ext));
-}
-
-/// Returns a file length in bytes.
-pub fn get_file_length(file_name: &[u8]) i32 {
-    return raw.GetFileLength(z_ptr(file_name));
-}
-
-/// Returns a file modification timestamp.
-pub fn get_file_mod_time(file_name: &[u8]) isize {
-    return raw.GetFileModTime(z_ptr(file_name));
-}
-
-/// Returns a pointer to the extension inside a path.
-pub fn get_file_extension(file_name: &[u8]) &u8 {
-    return raw.GetFileExtension(z_ptr(file_name));
-}
-
-/// Returns a pointer to the file name inside a path.
-pub fn get_file_name(file_path: &[u8]) &u8 {
-    return raw.GetFileName(z_ptr(file_path));
-}
-
-/// Returns a pointer to the file name without extension.
-pub fn get_file_name_without_ext(file_path: &[u8]) &u8 {
-    return raw.GetFileNameWithoutExt(z_ptr(file_path));
-}
-
-/// Returns a pointer to the directory part of a path.
-pub fn get_directory_path(file_path: &[u8]) &u8 {
-    return raw.GetDirectoryPath(z_ptr(file_path));
-}
-
-/// Returns a pointer to the previous directory path.
-pub fn get_prev_directory_path(dir_path: &[u8]) &u8 {
-    return raw.GetPrevDirectoryPath(z_ptr(dir_path));
 }
 
 /// Returns a pointer to raylib's current working directory string.
@@ -149,41 +44,6 @@ pub fn get_application_directory() &u8 {
     return raw.GetApplicationDirectory();
 }
 
-/// Creates a directory path.
-pub fn make_directory(dir_path: &[u8]) i32 {
-    return raw.MakeDirectory(z_ptr(dir_path));
-}
-
-/// Changes raylib's working directory.
-pub fn change_directory(dir_path: &[u8]) bool {
-    return raw.ChangeDirectory(z_ptr(dir_path));
-}
-
-/// Returns true when a path points to a file.
-pub fn is_path_file(path: &[u8]) bool {
-    return raw.IsPathFile(z_ptr(path));
-}
-
-/// Returns true when a file name is valid for the platform.
-pub fn is_file_name_valid(file_name: &[u8]) bool {
-    return raw.IsFileNameValid(z_ptr(file_name));
-}
-
-/// Loads files in a directory.
-pub fn load_directory_files(dir_path: &[u8]) FilePathList {
-    return raw.LoadDirectoryFiles(z_ptr(dir_path));
-}
-
-/// Loads files in a directory with filtering and optional recursion.
-pub fn load_directory_files_ex(base_path: &[u8], filter: &[u8], scan_subdirs: bool) FilePathList {
-    return raw.LoadDirectoryFilesEx(z_ptr(base_path), z_ptr(filter), scan_subdirs);
-}
-
-/// Releases a directory file list.
-pub fn unload_directory_files(files: FilePathList) void {
-    raw.UnloadDirectoryFiles(files);
-}
-
 /// Returns true when files were dropped onto the window.
 pub fn is_file_dropped() bool {
     return raw.IsFileDropped();
@@ -192,21 +52,6 @@ pub fn is_file_dropped() bool {
 /// Loads dropped file paths.
 pub fn load_dropped_files() FilePathList {
     return raw.LoadDroppedFiles();
-}
-
-/// Releases dropped file paths.
-pub fn unload_dropped_files(files: FilePathList) void {
-    raw.UnloadDroppedFiles(files);
-}
-
-/// Counts files in a directory.
-pub fn get_directory_file_count(dir_path: &[u8]) u32 {
-    return raw.GetDirectoryFileCount(z_ptr(dir_path));
-}
-
-/// Counts files in a directory with filtering and optional recursion.
-pub fn get_directory_file_count_ex(base_path: &[u8], filter: &[u8], scan_subdirs: bool) u32 {
-    return raw.GetDirectoryFileCountEx(z_ptr(base_path), z_ptr(filter), scan_subdirs);
 }
 
 /// Compresses data with DEFLATE. Release the returned memory with `mem_free()`.
@@ -247,4 +92,181 @@ pub fn compute_sha1(data: &u8, data_size: i32) &mut u32 {
 /// Computes SHA256 and returns raylib static storage.
 pub fn compute_sha256(data: &u8, data_size: i32) &mut u32 {
     return raw.ComputeSHA256(data, data_size);
+}
+
+impl &[u8] {
+    /// Returns true when this zero-terminated path exists as a file.
+    pub fn file_exists() bool {
+        return raw.FileExists(z_ptr(self));
+    }
+
+    /// Returns true when this zero-terminated path exists as a directory.
+    pub fn directory_exists() bool {
+        return raw.DirectoryExists(z_ptr(self));
+    }
+
+    /// Returns true when this zero-terminated path has `ext`.
+    pub fn has_extension(ext: &[u8]) bool {
+        return raw.IsFileExtension(z_ptr(self), z_ptr(ext));
+    }
+
+    /// Returns this file's length in bytes.
+    pub fn file_length() i32 {
+        return raw.GetFileLength(z_ptr(self));
+    }
+
+    /// Returns this file's modification timestamp.
+    pub fn file_mod_time() isize {
+        return raw.GetFileModTime(z_ptr(self));
+    }
+
+    /// Returns a pointer to this path's extension.
+    pub fn file_extension() &u8 {
+        return raw.GetFileExtension(z_ptr(self));
+    }
+
+    /// Returns a pointer to this path's file name.
+    pub fn file_name() &u8 {
+        return raw.GetFileName(z_ptr(self));
+    }
+
+    /// Returns a pointer to this path's file name without extension.
+    pub fn file_stem() &u8 {
+        return raw.GetFileNameWithoutExt(z_ptr(self));
+    }
+
+    /// Returns a pointer to this path's directory part.
+    pub fn directory_path() &u8 {
+        return raw.GetDirectoryPath(z_ptr(self));
+    }
+
+    /// Returns true when this zero-terminated path points to a file.
+    pub fn is_path_file() bool {
+        return raw.IsPathFile(z_ptr(self));
+    }
+
+    /// Returns true when this zero-terminated name is valid for the platform.
+    pub fn is_file_name_valid() bool {
+        return raw.IsFileNameValid(z_ptr(self));
+    }
+
+    /// Loads files in this directory.
+    pub fn directory_files() FilePathList {
+        return raw.LoadDirectoryFiles(z_ptr(self));
+    }
+
+    /// Loads files in this directory with filtering and optional recursion.
+    pub fn directory_files_ex(filter: &[u8], scan_subdirs: bool) FilePathList {
+        return raw.LoadDirectoryFilesEx(z_ptr(self), z_ptr(filter), scan_subdirs);
+    }
+
+    /// Counts files in this directory.
+    pub fn directory_file_count() u32 {
+        return raw.GetDirectoryFileCount(z_ptr(self));
+    }
+
+    /// Counts files in this directory with filtering and optional recursion.
+    pub fn directory_file_count_ex(filter: &[u8], scan_subdirs: bool) u32 {
+        return raw.GetDirectoryFileCountEx(z_ptr(self), z_ptr(filter), scan_subdirs);
+    }
+
+    /// Loads this path as bytes and writes the byte count.
+    pub fn load_data(data_size: &mut i32) &u8 {
+        return raw.LoadFileData(z_ptr(self), data_size);
+    }
+
+    /// Saves bytes to this path.
+    pub fn save_data(data: &mut void, data_size: i32) bool {
+        return raw.SaveFileData(z_ptr(self), data, data_size);
+    }
+
+    /// Exports bytes as generated C code to this path.
+    pub fn export_data_as_code(data: &u8, data_size: i32) bool {
+        return raw.ExportDataAsCode(data, data_size, z_ptr(self));
+    }
+
+    /// Loads this path as zero-terminated text.
+    pub fn load_text() &u8 {
+        return raw.LoadFileText(z_ptr(self));
+    }
+
+    /// Saves zero-terminated text to this path.
+    pub fn save_text(text: &[u8]) bool {
+        return raw.SaveFileText(z_ptr(self), z_ptr(text));
+    }
+
+    /// Renames this file.
+    pub fn rename_to(new_name: &[u8]) i32 {
+        return raw.FileRename(z_ptr(self), z_ptr(new_name));
+    }
+
+    /// Removes this file.
+    pub fn remove_file() i32 {
+        return raw.FileRemove(z_ptr(self));
+    }
+
+    /// Copies this file to `dst_path`.
+    pub fn copy_to(dst_path: &[u8]) i32 {
+        return raw.FileCopy(z_ptr(self), z_ptr(dst_path));
+    }
+
+    /// Moves this file to `dst_path`.
+    pub fn move_to(dst_path: &[u8]) i32 {
+        return raw.FileMove(z_ptr(self), z_ptr(dst_path));
+    }
+
+    /// Replaces text inside this file.
+    pub fn replace_file_text(search: &[u8], replacement: &[u8]) i32 {
+        return raw.FileTextReplace(z_ptr(self), z_ptr(search), z_ptr(replacement));
+    }
+
+    /// Finds text inside this file.
+    pub fn find_file_text(search: &[u8]) i32 {
+        return raw.FileTextFindIndex(z_ptr(self), z_ptr(search));
+    }
+
+    /// Returns a pointer to this path's previous directory.
+    pub fn prev_directory_path() &u8 {
+        return raw.GetPrevDirectoryPath(z_ptr(self));
+    }
+
+    /// Creates this directory path.
+    pub fn make_directory() i32 {
+        return raw.MakeDirectory(z_ptr(self));
+    }
+
+    /// Changes raylib's working directory to this path.
+    pub fn change_directory() bool {
+        return raw.ChangeDirectory(z_ptr(self));
+    }
+}
+
+impl FilePathList {
+    /// Returns the number of paths in this raylib-owned list.
+    pub fn len() u32 {
+        return self.count;
+    }
+
+    /// Returns true when this list contains no paths.
+    pub fn is_empty() bool {
+        return self.count == 0;
+    }
+
+    /// Returns the zero-terminated path pointer at `index`.
+    ///
+    /// Safety:
+    /// `index` must be smaller than `self.len()`.
+    pub fn at(index: usize) &u8 {
+        return (self.paths + index).*;
+    }
+
+    /// Releases a list returned by directory-scanning helpers.
+    pub fn unload_directory() void {
+        raw.UnloadDirectoryFiles(self);
+    }
+
+    /// Releases a list returned by `load_dropped_files()`.
+    pub fn unload_dropped() void {
+        raw.UnloadDroppedFiles(self);
+    }
 }

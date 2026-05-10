@@ -13,21 +13,6 @@ pub fn load_automation_event_list(file_name: &[u8]) AutomationEventList {
     return raw.LoadAutomationEventList(z_ptr(file_name));
 }
 
-/// Releases an automation event list.
-pub fn unload_automation_event_list(list: AutomationEventList) void {
-    raw.UnloadAutomationEventList(list);
-}
-
-/// Exports an automation event list to a text file.
-pub fn export_automation_event_list(list: AutomationEventList, file_name: &[u8]) bool {
-    return raw.ExportAutomationEventList(list, z_ptr(file_name));
-}
-
-/// Sets the list that receives newly recorded automation events.
-pub fn set_automation_event_list(list: &mut AutomationEventList) void {
-    raw.SetAutomationEventList(list);
-}
-
 /// Sets the base frame used when recording automation events.
 pub fn set_automation_event_base_frame(frame: i32) void {
     raw.SetAutomationEventBaseFrame(frame);
@@ -43,7 +28,38 @@ pub fn stop_automation_event_recording() void {
     raw.StopAutomationEventRecording();
 }
 
-/// Replays one recorded automation event.
-pub fn play_automation_event(event: AutomationEvent) void {
-    raw.PlayAutomationEvent(event);
+impl AutomationEventList {
+    /// Returns the number of events currently stored in this list.
+    pub fn len() u32 {
+        return self.count;
+    }
+
+    /// Returns true when this list contains no events.
+    pub fn is_empty() bool {
+        return self.count == 0;
+    }
+
+    /// Releases this automation event list.
+    pub fn unload() void {
+        raw.UnloadAutomationEventList(self);
+    }
+
+    /// Exports this automation event list to a text file.
+    pub fn export(file_name: &[u8]) bool {
+        return raw.ExportAutomationEventList(self, z_ptr(file_name));
+    }
+}
+
+impl &mut AutomationEventList {
+    /// Sets this list as the target for newly recorded automation events.
+    pub fn use_for_recording() void {
+        raw.SetAutomationEventList(self);
+    }
+}
+
+impl AutomationEvent {
+    /// Replays this recorded automation event.
+    pub fn play() void {
+        raw.PlayAutomationEvent(self);
+    }
 }

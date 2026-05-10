@@ -3,6 +3,19 @@
 //! 3D drawing calls normally live inside `begin_mode_3d()` / `end_mode_3d()`
 //! from the drawing module. Model, mesh, material, and animation values may own
 //! CPU or GPU resources; unload them before closing the window.
+//!
+//! ## Receiver style
+//!
+//! Load or generate resources through this module, then work from the returned
+//! handle:
+//!
+//! ```kern
+//! let model = raylib.models.load_model("ship.glb\0");
+//! defer model.unload();
+//!
+//! model.draw(raylib.vector3(0.0, 0.0, 0.0), 1.0, raylib.WHITE);
+//! let bounds = model.bounding_box();
+//! ```
 
 use ..raw;
 use ..internal.z_ptr;
@@ -25,301 +38,6 @@ use ..types.{
     Vector3,
 };
 
-/// Builds a world-space ray from a screen position.
-pub fn get_screen_to_world_ray(position: Vector2, camera: Camera) Ray {
-    return raw.GetScreenToWorldRay(position, camera);
-}
-
-/// Builds a world-space ray from a screen position in a viewport.
-pub fn get_screen_to_world_ray_ex(position: Vector2, camera: Camera, width: i32, height: i32) Ray {
-    return raw.GetScreenToWorldRayEx(
-        position,
-        camera,
-        width,
-        height,
-    );
-}
-
-/// Converts a 3D world position to screen space.
-pub fn get_world_to_screen(position: Vector3, camera: Camera) Vector2 {
-    return raw.GetWorldToScreen(position, camera);
-}
-
-/// Converts a 3D world position to screen space in a viewport.
-pub fn get_world_to_screen_ex(position: Vector3, camera: Camera, width: i32, height: i32) Vector2 {
-    return raw.GetWorldToScreenEx(
-        position,
-        camera,
-        width,
-        height,
-    );
-}
-
-/// Converts a 2D camera world position to screen space.
-pub fn get_world_to_screen_2d(position: Vector2, camera: Camera2D) Vector2 {
-    return raw.GetWorldToScreen2D(position, camera);
-}
-
-/// Converts a 2D screen position to camera world space.
-pub fn get_screen_to_world_2d(position: Vector2, camera: Camera2D) Vector2 {
-    return raw.GetScreenToWorld2D(position, camera);
-}
-
-/// Returns a 3D camera view matrix.
-pub fn get_camera_matrix(camera: Camera) Matrix {
-    return raw.GetCameraMatrix(camera);
-}
-
-/// Returns a 2D camera transform matrix.
-pub fn get_camera_matrix_2d(camera: Camera2D) Matrix {
-    return raw.GetCameraMatrix2D(camera);
-}
-
-/// Updates a camera using raylib's built-in camera modes.
-pub fn update_camera(camera: &mut Camera, mode: i32) void {
-    raw.UpdateCamera(camera, mode);
-}
-
-/// Updates a camera from explicit movement, rotation, and zoom input.
-pub fn update_camera_pro(
-    camera: &mut Camera,
-    movement: Vector3,
-    rotation: Vector3,
-    zoom: f32,
-) void {
-    raw.UpdateCameraPro(
-        camera,
-        movement,
-        rotation,
-        zoom,
-    );
-}
-
-/// Draws a 3D line.
-pub fn draw_line_3d(start: Vector3, end: Vector3, color: Color) void {
-    raw.DrawLine3D(start, end, color);
-}
-
-/// Draws a 3D point.
-pub fn draw_point_3d(position: Vector3, color: Color) void {
-    raw.DrawPoint3D(position, color);
-}
-
-/// Draws a 3D circle.
-pub fn draw_circle_3d(
-    center: Vector3,
-    radius: f32,
-    rotation_axis: Vector3,
-    rotation_angle: f32,
-    color: Color,
-) void {
-    raw.DrawCircle3D(
-        center,
-        radius,
-        rotation_axis,
-        rotation_angle,
-        color,
-    );
-}
-
-/// Draws a filled 3D triangle.
-pub fn draw_triangle_3d(v1: Vector3, v2: Vector3, v3: Vector3, color: Color) void {
-    raw.DrawTriangle3D(
-        v1,
-        v2,
-        v3,
-        color,
-    );
-}
-
-/// Draws a 3D triangle strip.
-pub fn draw_triangle_strip_3d(points: &mut Vector3, point_count: i32, color: Color) void {
-    raw.DrawTriangleStrip3D(points, point_count, color);
-}
-
-/// Draws a cube.
-pub fn draw_cube(position: Vector3, width: f32, height: f32, length: f32, color: Color) void {
-    raw.DrawCube(
-        position,
-        width,
-        height,
-        length,
-        color,
-    );
-}
-
-/// Draws a cube using vector size.
-pub fn draw_cube_v(position: Vector3, size: Vector3, color: Color) void {
-    raw.DrawCubeV(position, size, color);
-}
-
-/// Draws cube wireframe.
-pub fn draw_cube_wires(position: Vector3, width: f32, height: f32, length: f32, color: Color) void {
-    raw.DrawCubeWires(
-        position,
-        width,
-        height,
-        length,
-        color,
-    );
-}
-
-/// Draws cube wireframe using vector size.
-pub fn draw_cube_wires_v(position: Vector3, size: Vector3, color: Color) void {
-    raw.DrawCubeWiresV(position, size, color);
-}
-
-/// Draws a sphere.
-pub fn draw_sphere(center: Vector3, radius: f32, color: Color) void {
-    raw.DrawSphere(center, radius, color);
-}
-
-/// Draws a sphere with explicit rings and slices.
-pub fn draw_sphere_ex(center: Vector3, radius: f32, rings: i32, slices: i32, color: Color) void {
-    raw.DrawSphereEx(
-        center,
-        radius,
-        rings,
-        slices,
-        color,
-    );
-}
-
-/// Draws sphere wireframe.
-pub fn draw_sphere_wires(center: Vector3, radius: f32, rings: i32, slices: i32, color: Color) void {
-    raw.DrawSphereWires(
-        center,
-        radius,
-        rings,
-        slices,
-        color,
-    );
-}
-
-/// Draws a cylinder or cone.
-pub fn draw_cylinder(
-    position: Vector3,
-    radius_top: f32,
-    radius_bottom: f32,
-    height: f32,
-    slices: i32,
-    color: Color,
-) void {
-    raw.DrawCylinder(
-        position,
-        radius_top,
-        radius_bottom,
-        height,
-        slices,
-        color,
-    );
-}
-
-/// Draws a cylinder between two points.
-pub fn draw_cylinder_ex(
-    start: Vector3,
-    end: Vector3,
-    start_radius: f32,
-    end_radius: f32,
-    sides: i32,
-    color: Color,
-) void {
-    raw.DrawCylinderEx(
-        start,
-        end,
-        start_radius,
-        end_radius,
-        sides,
-        color,
-    );
-}
-
-/// Draws cylinder wireframe.
-pub fn draw_cylinder_wires(
-    position: Vector3,
-    radius_top: f32,
-    radius_bottom: f32,
-    height: f32,
-    slices: i32,
-    color: Color,
-) void {
-    raw.DrawCylinderWires(
-        position,
-        radius_top,
-        radius_bottom,
-        height,
-        slices,
-        color,
-    );
-}
-
-/// Draws cylinder wireframe between two points.
-pub fn draw_cylinder_wires_ex(
-    start: Vector3,
-    end: Vector3,
-    start_radius: f32,
-    end_radius: f32,
-    sides: i32,
-    color: Color,
-) void {
-    raw.DrawCylinderWiresEx(
-        start,
-        end,
-        start_radius,
-        end_radius,
-        sides,
-        color,
-    );
-}
-
-/// Draws a capsule.
-pub fn draw_capsule(
-    start: Vector3,
-    end: Vector3,
-    radius: f32,
-    slices: i32,
-    rings: i32,
-    color: Color,
-) void {
-    raw.DrawCapsule(
-        start,
-        end,
-        radius,
-        slices,
-        rings,
-        color,
-    );
-}
-
-/// Draws capsule wireframe.
-pub fn draw_capsule_wires(
-    start: Vector3,
-    end: Vector3,
-    radius: f32,
-    slices: i32,
-    rings: i32,
-    color: Color,
-) void {
-    raw.DrawCapsuleWires(
-        start,
-        end,
-        radius,
-        slices,
-        rings,
-        color,
-    );
-}
-
-/// Draws an XZ plane.
-pub fn draw_plane(center: Vector3, size: Vector2, color: Color) void {
-    raw.DrawPlane(center, size, color);
-}
-
-/// Draws a ray.
-pub fn draw_ray(ray: Ray, color: Color) void {
-    raw.DrawRay(ray, color);
-}
-
 /// Draws a centered grid.
 pub fn draw_grid(slices: i32, spacing: f32) void {
     raw.DrawGrid(slices, spacing);
@@ -328,217 +46,6 @@ pub fn draw_grid(slices: i32, spacing: f32) void {
 /// Loads a model from a zero-terminated file path.
 pub fn load_model(file_name: &[u8]) Model {
     return raw.LoadModel(z_ptr(file_name));
-}
-
-/// Creates a model from a mesh with the default material.
-pub fn load_model_from_mesh(mesh: Mesh) Model {
-    return raw.LoadModelFromMesh(mesh);
-}
-
-/// Returns true when a model is loaded and valid.
-pub fn is_model_valid(model: Model) bool {
-    return raw.IsModelValid(model);
-}
-
-/// Releases a model, including owned meshes and GPU resources.
-pub fn unload_model(model: Model) void {
-    raw.UnloadModel(model);
-}
-
-/// Computes a model bounding box.
-pub fn get_model_bounding_box(model: Model) BoundingBox {
-    return raw.GetModelBoundingBox(model);
-}
-
-/// Draws a model.
-pub fn draw_model(model: Model, position: Vector3, scale: f32, tint: Color) void {
-    raw.DrawModel(
-        model,
-        position,
-        scale,
-        tint,
-    );
-}
-
-/// Draws a model with explicit rotation and non-uniform scale.
-pub fn draw_model_ex(
-    model: Model,
-    position: Vector3,
-    rotation_axis: Vector3,
-    rotation_angle: f32,
-    scale: Vector3,
-    tint: Color,
-) void {
-    raw.DrawModelEx(
-        model,
-        position,
-        rotation_axis,
-        rotation_angle,
-        scale,
-        tint,
-    );
-}
-
-/// Draws model wireframe.
-pub fn draw_model_wires(model: Model, position: Vector3, scale: f32, tint: Color) void {
-    raw.DrawModelWires(
-        model,
-        position,
-        scale,
-        tint,
-    );
-}
-
-/// Draws model wireframe with explicit rotation and non-uniform scale.
-pub fn draw_model_wires_ex(
-    model: Model,
-    position: Vector3,
-    rotation_axis: Vector3,
-    rotation_angle: f32,
-    scale: Vector3,
-    tint: Color,
-) void {
-    raw.DrawModelWiresEx(
-        model,
-        position,
-        rotation_axis,
-        rotation_angle,
-        scale,
-        tint,
-    );
-}
-
-/// Draws a bounding box wireframe.
-pub fn draw_bounding_box(box: BoundingBox, color: Color) void {
-    raw.DrawBoundingBox(box, color);
-}
-
-/// Draws a billboard texture.
-pub fn draw_billboard(
-    camera: Camera,
-    texture: Texture2D,
-    position: Vector3,
-    scale: f32,
-    tint: Color,
-) void {
-    raw.DrawBillboard(
-        camera,
-        texture,
-        position,
-        scale,
-        tint,
-    );
-}
-
-/// Draws a billboard texture source rectangle.
-pub fn draw_billboard_rec(
-    camera: Camera,
-    texture: Texture2D,
-    source: Rectangle,
-    position: Vector3,
-    size: Vector2,
-    tint: Color,
-) void {
-    raw.DrawBillboardRec(
-        camera,
-        texture,
-        source,
-        position,
-        size,
-        tint,
-    );
-}
-
-/// Draws a billboard texture with rotation.
-pub fn draw_billboard_pro(
-    camera: Camera,
-    texture: Texture2D,
-    source: Rectangle,
-    position: Vector3,
-    up: Vector3,
-    size: Vector2,
-    origin: Vector2,
-    rotation: f32,
-    tint: Color,
-) void {
-    raw.DrawBillboardPro(
-        camera,
-        texture,
-        source,
-        position,
-        up,
-        size,
-        origin,
-        rotation,
-        tint,
-    );
-}
-
-/// Uploads mesh vertex data to GPU buffers.
-pub fn upload_mesh(mesh: &mut Mesh, dynamic: bool) void {
-    raw.UploadMesh(mesh, dynamic);
-}
-
-/// Updates one mesh vertex buffer.
-pub fn update_mesh_buffer(
-    mesh: Mesh,
-    index: i32,
-    data: &mut void,
-    data_size: i32,
-    offset: i32,
-) void {
-    raw.UpdateMeshBuffer(
-        mesh,
-        index,
-        data,
-        data_size,
-        offset,
-    );
-}
-
-/// Releases mesh CPU and GPU data.
-pub fn unload_mesh(mesh: Mesh) void {
-    raw.UnloadMesh(mesh);
-}
-
-/// Draws a mesh with a material and transform.
-pub fn draw_mesh(mesh: Mesh, material: Material, transform: Matrix) void {
-    raw.DrawMesh(mesh, material, transform);
-}
-
-/// Draws instanced meshes.
-pub fn draw_mesh_instanced(
-    mesh: Mesh,
-    material: Material,
-    transforms: &mut Matrix,
-    instances: i32,
-) void {
-    raw.DrawMeshInstanced(
-        mesh,
-        material,
-        transforms,
-        instances,
-    );
-}
-
-/// Computes a mesh bounding box.
-pub fn get_mesh_bounding_box(mesh: Mesh) BoundingBox {
-    return raw.GetMeshBoundingBox(mesh);
-}
-
-/// Computes mesh tangent vectors in place.
-pub fn gen_mesh_tangents(mesh: &mut Mesh) void {
-    raw.GenMeshTangents(mesh);
-}
-
-/// Writes mesh data to a zero-terminated file path.
-pub fn export_mesh(mesh: Mesh, file_name: &[u8]) bool {
-    return raw.ExportMesh(mesh, z_ptr(file_name));
-}
-
-/// Writes mesh data as generated C code.
-pub fn export_mesh_as_code(mesh: Mesh, file_name: &[u8]) bool {
-    return raw.ExportMeshAsCode(mesh, z_ptr(file_name));
 }
 
 /// Generates a polygon mesh.
@@ -621,53 +128,9 @@ pub fn load_material_default() Material {
     return raw.LoadMaterialDefault();
 }
 
-/// Returns true when a material has valid shader and maps.
-pub fn is_material_valid(material: Material) bool {
-    return raw.IsMaterialValid(material);
-}
-
-/// Releases a material's GPU resources.
-pub fn unload_material(material: Material) void {
-    raw.UnloadMaterial(material);
-}
-
-/// Assigns a texture to a material map slot.
-pub fn set_material_texture(material: &mut Material, map_type: i32, texture: Texture2D) void {
-    raw.SetMaterialTexture(material, map_type, texture);
-}
-
-/// Assigns a material to a model mesh.
-pub fn set_model_mesh_material(model: &mut Model, mesh_id: i32, material_id: i32) void {
-    raw.SetModelMeshMaterial(model, mesh_id, material_id);
-}
-
 /// Loads model animations from a file.
 pub fn load_model_animations(file_name: &[u8], anim_count: &mut i32) &mut ModelAnimation {
     return raw.LoadModelAnimations(z_ptr(file_name), anim_count);
-}
-
-/// Updates a model pose from one animation frame.
-pub fn update_model_animation(model: Model, anim: ModelAnimation, frame: f32) void {
-    raw.UpdateModelAnimation(model, anim, frame);
-}
-
-/// Updates a model pose by blending two animation frames.
-pub fn update_model_animation_ex(
-    model: Model,
-    anim_a: ModelAnimation,
-    frame_a: f32,
-    anim_b: ModelAnimation,
-    frame_b: f32,
-    blend: f32,
-) void {
-    raw.UpdateModelAnimationEx(
-        model,
-        anim_a,
-        frame_a,
-        anim_b,
-        frame_b,
-        blend,
-    );
 }
 
 /// Releases an array of model animations.
@@ -675,79 +138,663 @@ pub fn unload_model_animations(animations: &mut ModelAnimation, anim_count: i32)
     raw.UnloadModelAnimations(animations, anim_count);
 }
 
-/// Returns true when an animation skeleton matches the model.
-pub fn is_model_animation_valid(model: Model, anim: ModelAnimation) bool {
-    return raw.IsModelAnimationValid(model, anim);
+impl Vector3 {
+    /// Draws a 3D point at this position.
+    pub fn draw_point(color: Color) void {
+        raw.DrawPoint3D(self, color);
+    }
+
+    /// Draws a 3D line from this position to `end`.
+    pub fn draw_line_to(end: Vector3, color: Color) void {
+        raw.DrawLine3D(self, end, color);
+    }
+
+    /// Draws a 3D circle centered at this position.
+    pub fn draw_circle(
+        radius: f32,
+        rotation_axis: Vector3,
+        rotation_angle: f32,
+        color: Color,
+    ) void {
+        raw.DrawCircle3D(
+            self,
+            radius,
+            rotation_axis,
+            rotation_angle,
+            color,
+        );
+    }
+
+    /// Draws a filled 3D triangle with this point as the first vertex.
+    pub fn draw_triangle(p2: Vector3, p3: Vector3, color: Color) void {
+        raw.DrawTriangle3D(
+            self,
+            p2,
+            p3,
+            color,
+        );
+    }
+
+    /// Draws a box centered at this position.
+    pub fn draw_box(width: f32, height: f32, length: f32, color: Color) void {
+        raw.DrawCube(
+            self,
+            width,
+            height,
+            length,
+            color,
+        );
+    }
+
+    /// Draws a box centered at this position using vector dimensions.
+    pub fn draw_box_size(size: Vector3, color: Color) void {
+        raw.DrawCubeV(self, size, color);
+    }
+
+    /// Draws a wireframe box centered at this position.
+    pub fn draw_box_wires(width: f32, height: f32, length: f32, color: Color) void {
+        raw.DrawCubeWires(
+            self,
+            width,
+            height,
+            length,
+            color,
+        );
+    }
+
+    /// Draws a wireframe box centered at this position using vector dimensions.
+    pub fn draw_box_wires_size(size: Vector3, color: Color) void {
+        raw.DrawCubeWiresV(self, size, color);
+    }
+
+    /// Draws a sphere centered at this position.
+    pub fn draw_sphere(radius: f32, color: Color) void {
+        raw.DrawSphere(self, radius, color);
+    }
+
+    /// Draws a sphere with explicit rings and slices.
+    pub fn draw_sphere_ex(radius: f32, rings: i32, slices: i32, color: Color) void {
+        raw.DrawSphereEx(
+            self,
+            radius,
+            rings,
+            slices,
+            color,
+        );
+    }
+
+    /// Draws a wireframe sphere centered at this position.
+    pub fn draw_sphere_wires(radius: f32, rings: i32, slices: i32, color: Color) void {
+        raw.DrawSphereWires(
+            self,
+            radius,
+            rings,
+            slices,
+            color,
+        );
+    }
+
+    /// Draws an upright cylinder or cone centered at this position.
+    pub fn draw_cylinder(
+        radius_top: f32,
+        radius_bottom: f32,
+        height: f32,
+        slices: i32,
+        color: Color,
+    ) void {
+        raw.DrawCylinder(
+            self,
+            radius_top,
+            radius_bottom,
+            height,
+            slices,
+            color,
+        );
+    }
+
+    /// Draws a cylinder from this point to `end`.
+    pub fn draw_cylinder_to(
+        end: Vector3,
+        start_radius: f32,
+        end_radius: f32,
+        sides: i32,
+        color: Color,
+    ) void {
+        raw.DrawCylinderEx(
+            self,
+            end,
+            start_radius,
+            end_radius,
+            sides,
+            color,
+        );
+    }
+
+    /// Draws an upright cylinder wireframe centered at this position.
+    pub fn draw_cylinder_wires(
+        radius_top: f32,
+        radius_bottom: f32,
+        height: f32,
+        slices: i32,
+        color: Color,
+    ) void {
+        raw.DrawCylinderWires(
+            self,
+            radius_top,
+            radius_bottom,
+            height,
+            slices,
+            color,
+        );
+    }
+
+    /// Draws a cylinder wireframe from this point to `end`.
+    pub fn draw_cylinder_wires_to(
+        end: Vector3,
+        start_radius: f32,
+        end_radius: f32,
+        sides: i32,
+        color: Color,
+    ) void {
+        raw.DrawCylinderWiresEx(
+            self,
+            end,
+            start_radius,
+            end_radius,
+            sides,
+            color,
+        );
+    }
+
+    /// Draws a capsule from this point to `end`.
+    pub fn draw_capsule_to(end: Vector3, radius: f32, slices: i32, rings: i32, color: Color) void {
+        raw.DrawCapsule(
+            self,
+            end,
+            radius,
+            slices,
+            rings,
+            color,
+        );
+    }
+
+    /// Draws a capsule wireframe from this point to `end`.
+    pub fn draw_capsule_wires_to(
+        end: Vector3,
+        radius: f32,
+        slices: i32,
+        rings: i32,
+        color: Color,
+    ) void {
+        raw.DrawCapsuleWires(
+            self,
+            end,
+            radius,
+            slices,
+            rings,
+            color,
+        );
+    }
+
+    /// Draws an XZ plane centered at this position.
+    pub fn draw_plane(size: Vector2, color: Color) void {
+        raw.DrawPlane(self, size, color);
+    }
+
+    /// Returns true when this sphere overlaps another sphere.
+    pub fn sphere_overlaps(radius: f32, other_center: Vector3, other_radius: f32) bool {
+        return raw.CheckCollisionSpheres(
+            self,
+            radius,
+            other_center,
+            other_radius,
+        );
+    }
 }
 
-/// Checks collision between two spheres.
-pub fn check_collision_spheres(
-    center1: Vector3,
-    radius1: f32,
-    center2: Vector3,
-    radius2: f32,
-) bool {
-    return raw.CheckCollisionSpheres(
-        center1,
-        radius1,
-        center2,
-        radius2,
-    );
+impl &mut Vector3 {
+    /// Draws a triangle strip from this array pointer.
+    ///
+    /// Safety:
+    /// `self` must point to at least `point_count` contiguous `Vector3` values.
+    pub fn draw_triangle_strip(point_count: i32, color: Color) void {
+        raw.DrawTriangleStrip3D(self, point_count, color);
+    }
 }
 
-/// Checks collision between two bounding boxes.
-pub fn check_collision_boxes(box1: BoundingBox, box2: BoundingBox) bool {
-    return raw.CheckCollisionBoxes(box1, box2);
+impl Camera {
+    /// Builds a world-space ray from a screen position through this camera.
+    pub fn screen_ray(position: Vector2) Ray {
+        return raw.GetScreenToWorldRay(position, self);
+    }
+
+    /// Builds a world-space ray from a screen position in a viewport.
+    pub fn screen_ray_ex(position: Vector2, width: i32, height: i32) Ray {
+        return raw.GetScreenToWorldRayEx(
+            position,
+            self,
+            width,
+            height,
+        );
+    }
+
+    /// Converts a 3D world position to screen space through this camera.
+    pub fn world_to_screen(position: Vector3) Vector2 {
+        return raw.GetWorldToScreen(position, self);
+    }
+
+    /// Converts a 3D world position to screen space in a viewport.
+    pub fn world_to_screen_ex(position: Vector3, width: i32, height: i32) Vector2 {
+        return raw.GetWorldToScreenEx(
+            position,
+            self,
+            width,
+            height,
+        );
+    }
+
+    /// Returns this camera's view matrix.
+    pub fn matrix() Matrix {
+        return raw.GetCameraMatrix(self);
+    }
+
+    /// Draws a billboard texture through this camera.
+    pub fn draw_billboard(texture: Texture2D, position: Vector3, scale: f32, tint: Color) void {
+        raw.DrawBillboard(
+            self,
+            texture,
+            position,
+            scale,
+            tint,
+        );
+    }
+
+    /// Draws a billboard texture source rectangle through this camera.
+    pub fn draw_billboard_rec(
+        texture: Texture2D,
+        source: Rectangle,
+        position: Vector3,
+        size: Vector2,
+        tint: Color,
+    ) void {
+        raw.DrawBillboardRec(
+            self,
+            texture,
+            source,
+            position,
+            size,
+            tint,
+        );
+    }
+
+    /// Draws a rotated billboard texture through this camera.
+    pub fn draw_billboard_pro(
+        texture: Texture2D,
+        source: Rectangle,
+        position: Vector3,
+        up: Vector3,
+        size: Vector2,
+        origin: Vector2,
+        rotation: f32,
+        tint: Color,
+    ) void {
+        raw.DrawBillboardPro(
+            self,
+            texture,
+            source,
+            position,
+            up,
+            size,
+            origin,
+            rotation,
+            tint,
+        );
+    }
 }
 
-/// Checks collision between a bounding box and a sphere.
-pub fn check_collision_box_sphere(box: BoundingBox, center: Vector3, radius: f32) bool {
-    return raw.CheckCollisionBoxSphere(box, center, radius);
+impl &mut Camera {
+    /// Updates this camera using raylib's built-in camera modes.
+    pub fn update(mode: i32) void {
+        raw.UpdateCamera(self, mode);
+    }
+
+    /// Updates this camera from explicit movement, rotation, and zoom input.
+    pub fn update_pro(movement: Vector3, rotation: Vector3, zoom: f32) void {
+        raw.UpdateCameraPro(
+            self,
+            movement,
+            rotation,
+            zoom,
+        );
+    }
 }
 
-/// Returns ray/sphere collision information.
-pub fn get_ray_collision_sphere(ray: Ray, center: Vector3, radius: f32) RayCollision {
-    return raw.GetRayCollisionSphere(ray, center, radius);
+impl Camera2D {
+    /// Converts a 2D camera world position to screen space.
+    pub fn world_to_screen(position: Vector2) Vector2 {
+        return raw.GetWorldToScreen2D(position, self);
+    }
+
+    /// Converts a 2D screen position to camera world space.
+    pub fn screen_to_world(position: Vector2) Vector2 {
+        return raw.GetScreenToWorld2D(position, self);
+    }
+
+    /// Returns this camera's 2D transform matrix.
+    pub fn matrix() Matrix {
+        return raw.GetCameraMatrix2D(self);
+    }
 }
 
-/// Returns ray/box collision information.
-pub fn get_ray_collision_box(ray: Ray, box: BoundingBox) RayCollision {
-    return raw.GetRayCollisionBox(ray, box);
+impl Model {
+    /// Returns true when this model is loaded and valid.
+    pub fn is_valid() bool {
+        return raw.IsModelValid(self);
+    }
+
+    /// Releases this model, including owned meshes and GPU resources.
+    pub fn unload() void {
+        raw.UnloadModel(self);
+    }
+
+    /// Computes this model's bounding box.
+    pub fn bounding_box() BoundingBox {
+        return raw.GetModelBoundingBox(self);
+    }
+
+    /// Draws this model.
+    pub fn draw(position: Vector3, scale: f32, tint: Color) void {
+        raw.DrawModel(
+            self,
+            position,
+            scale,
+            tint,
+        );
+    }
+
+    /// Draws this model with explicit rotation and non-uniform scale.
+    pub fn draw_ex(
+        position: Vector3,
+        rotation_axis: Vector3,
+        rotation_angle: f32,
+        scale: Vector3,
+        tint: Color,
+    ) void {
+        raw.DrawModelEx(
+            self,
+            position,
+            rotation_axis,
+            rotation_angle,
+            scale,
+            tint,
+        );
+    }
+
+    /// Draws this model as a wireframe.
+    pub fn draw_wires(position: Vector3, scale: f32, tint: Color) void {
+        raw.DrawModelWires(
+            self,
+            position,
+            scale,
+            tint,
+        );
+    }
+
+    /// Draws this model wireframe with explicit rotation and non-uniform scale.
+    pub fn draw_wires_ex(
+        position: Vector3,
+        rotation_axis: Vector3,
+        rotation_angle: f32,
+        scale: Vector3,
+        tint: Color,
+    ) void {
+        raw.DrawModelWiresEx(
+            self,
+            position,
+            rotation_axis,
+            rotation_angle,
+            scale,
+            tint,
+        );
+    }
+
+    /// Returns true when `anim` matches this model's skeleton.
+    pub fn accepts_animation(anim: ModelAnimation) bool {
+        return raw.IsModelAnimationValid(self, anim);
+    }
+
+    /// Updates this model pose from one animation frame.
+    pub fn update_animation(anim: ModelAnimation, frame: f32) void {
+        raw.UpdateModelAnimation(self, anim, frame);
+    }
+
+    /// Updates this model pose by blending two animation frames.
+    pub fn update_animation_ex(
+        anim_a: ModelAnimation,
+        frame_a: f32,
+        anim_b: ModelAnimation,
+        frame_b: f32,
+        blend: f32,
+    ) void {
+        raw.UpdateModelAnimationEx(
+            self,
+            anim_a,
+            frame_a,
+            anim_b,
+            frame_b,
+            blend,
+        );
+    }
 }
 
-/// Returns ray/mesh collision information.
-pub fn get_ray_collision_mesh(ray: Ray, mesh: Mesh, transform: Matrix) RayCollision {
-    return raw.GetRayCollisionMesh(ray, mesh, transform);
+impl &mut Model {
+    /// Assigns a material to one of this model's meshes.
+    pub fn set_mesh_material(mesh_id: i32, material_id: i32) void {
+        raw.SetModelMeshMaterial(self, mesh_id, material_id);
+    }
 }
 
-/// Returns ray/triangle collision information.
-pub fn get_ray_collision_triangle(
-    ray: Ray,
-    p1: Vector3,
-    p2: Vector3,
-    p3: Vector3,
-) RayCollision {
-    return raw.GetRayCollisionTriangle(
-        ray,
-        p1,
-        p2,
-        p3,
-    );
+impl Mesh {
+    /// Creates a model from this mesh with raylib's default material.
+    pub fn to_model() Model {
+        return raw.LoadModelFromMesh(self);
+    }
+
+    /// Releases this mesh's CPU and GPU data.
+    pub fn unload() void {
+        raw.UnloadMesh(self);
+    }
+
+    /// Draws this mesh with a material and transform.
+    pub fn draw(material: Material, transform: Matrix) void {
+        raw.DrawMesh(self, material, transform);
+    }
+
+    /// Draws instanced copies of this mesh.
+    pub fn draw_instanced(material: Material, transforms: &mut Matrix, instances: i32) void {
+        raw.DrawMeshInstanced(
+            self,
+            material,
+            transforms,
+            instances,
+        );
+    }
+
+    /// Computes this mesh's bounding box.
+    pub fn bounding_box() BoundingBox {
+        return raw.GetMeshBoundingBox(self);
+    }
+
+    /// Updates one mesh vertex buffer.
+    pub fn update_buffer(index: i32, data: &mut void, data_size: i32, offset: i32) void {
+        raw.UpdateMeshBuffer(
+            self,
+            index,
+            data,
+            data_size,
+            offset,
+        );
+    }
+
+    /// Writes this mesh data to a zero-terminated file path.
+    pub fn export(file_name: &[u8]) bool {
+        return raw.ExportMesh(self, z_ptr(file_name));
+    }
+
+    /// Writes this mesh data as generated C code.
+    pub fn export_as_code(file_name: &[u8]) bool {
+        return raw.ExportMeshAsCode(self, z_ptr(file_name));
+    }
 }
 
-/// Returns ray/quad collision information.
-pub fn get_ray_collision_quad(
-    ray: Ray,
-    p1: Vector3,
-    p2: Vector3,
-    p3: Vector3,
-    p4: Vector3,
-) RayCollision {
-    return raw.GetRayCollisionQuad(
-        ray,
-        p1,
-        p2,
-        p3,
-        p4,
-    );
+impl &mut Mesh {
+    /// Releases this mesh's CPU and GPU data.
+    pub fn unload() void {
+        raw.UnloadMesh(self.*);
+    }
+
+    /// Draws this mesh with a material and transform.
+    pub fn draw(material: Material, transform: Matrix) void {
+        raw.DrawMesh(self.*, material, transform);
+    }
+
+    /// Draws instanced copies of this mesh.
+    pub fn draw_instanced(material: Material, transforms: &mut Matrix, instances: i32) void {
+        raw.DrawMeshInstanced(
+            self.*,
+            material,
+            transforms,
+            instances,
+        );
+    }
+
+    /// Computes this mesh's bounding box.
+    pub fn bounding_box() BoundingBox {
+        return raw.GetMeshBoundingBox(self.*);
+    }
+
+    /// Updates one mesh vertex buffer.
+    pub fn update_buffer(index: i32, data: &mut void, data_size: i32, offset: i32) void {
+        raw.UpdateMeshBuffer(
+            self.*,
+            index,
+            data,
+            data_size,
+            offset,
+        );
+    }
+
+    /// Writes this mesh data to a zero-terminated file path.
+    pub fn export(file_name: &[u8]) bool {
+        return raw.ExportMesh(self.*, z_ptr(file_name));
+    }
+
+    /// Writes this mesh data as generated C code.
+    pub fn export_as_code(file_name: &[u8]) bool {
+        return raw.ExportMeshAsCode(self.*, z_ptr(file_name));
+    }
+
+    /// Creates a model from this mesh with raylib's default material.
+    pub fn to_model() Model {
+        return raw.LoadModelFromMesh(self.*);
+    }
+
+    /// Uploads this mesh's vertex data to GPU buffers.
+    pub fn upload(dynamic: bool) void {
+        raw.UploadMesh(self, dynamic);
+    }
+
+    /// Computes mesh tangent vectors in place.
+    pub fn gen_tangents() void {
+        raw.GenMeshTangents(self);
+    }
+}
+
+impl Material {
+    /// Returns true when this material has valid shader and maps.
+    pub fn is_valid() bool {
+        return raw.IsMaterialValid(self);
+    }
+
+    /// Releases this material's GPU resources.
+    pub fn unload() void {
+        raw.UnloadMaterial(self);
+    }
+}
+
+impl &mut Material {
+    /// Returns true when this material has valid shader and maps.
+    pub fn is_valid() bool {
+        return raw.IsMaterialValid(self.*);
+    }
+
+    /// Releases this material's GPU resources.
+    pub fn unload() void {
+        raw.UnloadMaterial(self.*);
+    }
+
+    /// Assigns a texture to this material map slot.
+    pub fn set_texture(map_type: i32, texture: Texture2D) void {
+        raw.SetMaterialTexture(self, map_type, texture);
+    }
+}
+
+impl Ray {
+    /// Draws this ray.
+    pub fn draw(color: Color) void {
+        raw.DrawRay(self, color);
+    }
+
+    /// Returns ray/sphere collision information.
+    pub fn collide_sphere(center: Vector3, radius: f32) RayCollision {
+        return raw.GetRayCollisionSphere(self, center, radius);
+    }
+
+    /// Returns ray/box collision information.
+    pub fn collide_box(box: BoundingBox) RayCollision {
+        return raw.GetRayCollisionBox(self, box);
+    }
+
+    /// Returns ray/mesh collision information.
+    pub fn collide_mesh(mesh: Mesh, transform: Matrix) RayCollision {
+        return raw.GetRayCollisionMesh(self, mesh, transform);
+    }
+
+    /// Returns ray/triangle collision information.
+    pub fn collide_triangle(p1: Vector3, p2: Vector3, p3: Vector3) RayCollision {
+        return raw.GetRayCollisionTriangle(
+            self,
+            p1,
+            p2,
+            p3,
+        );
+    }
+
+    /// Returns ray/quad collision information.
+    pub fn collide_quad(p1: Vector3, p2: Vector3, p3: Vector3, p4: Vector3) RayCollision {
+        return raw.GetRayCollisionQuad(
+            self,
+            p1,
+            p2,
+            p3,
+            p4,
+        );
+    }
+}
+
+impl BoundingBox {
+    /// Draws this bounding box as a wireframe.
+    pub fn draw(color: Color) void {
+        raw.DrawBoundingBox(self, color);
+    }
+
+    /// Returns true when this bounding box overlaps `other`.
+    pub fn overlaps(other: BoundingBox) bool {
+        return raw.CheckCollisionBoxes(self, other);
+    }
+
+    /// Returns true when this bounding box overlaps the sphere.
+    pub fn overlaps_sphere(center: Vector3, radius: f32) bool {
+        return raw.CheckCollisionBoxSphere(self, center, radius);
+    }
 }

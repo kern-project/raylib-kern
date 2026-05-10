@@ -1,7 +1,16 @@
 //! Shader loading and uniform helpers.
 //!
-//! Shaders are GPU resources. Load them after `init_window()`, use the returned
-//! locations for uniform updates, and release them before closing the window.
+//! Shaders are GPU resources. Load them after `window.open()`, use the returned
+//! handle as the receiver for uniform updates, and release it before closing the
+//! window:
+//!
+//! ```kern
+//! let shader = raylib.shaders.load_shader("vs.glsl\0", "fs.glsl\0");
+//! defer shader.unload();
+//!
+//! let tint = shader.location("tint\0");
+//! shader.set_value(tint, value, raylib.ShaderUniformDataType.VEC4);
+//! ```
 
 use ..raw;
 use ..internal.z_ptr;
@@ -17,64 +26,70 @@ pub fn load_shader_from_memory(vs_code: &[u8], fs_code: &[u8]) Shader {
     return raw.LoadShaderFromMemory(z_ptr(vs_code), z_ptr(fs_code));
 }
 
-/// Returns true when the shader is loaded and valid.
-pub fn is_shader_valid(shader: Shader) bool {
-    return raw.IsShaderValid(shader);
-}
+impl Shader {
+    /// Returns true when this shader is loaded and valid.
+    pub fn is_valid() bool {
+        return raw.IsShaderValid(self);
+    }
 
-/// Returns a uniform location by name.
-pub fn get_shader_location(shader: Shader, uniform_name: &[u8]) i32 {
-    return raw.GetShaderLocation(shader, z_ptr(uniform_name));
-}
+    /// Returns a uniform location by name.
+    pub fn location(uniform_name: &[u8]) i32 {
+        return raw.GetShaderLocation(self, z_ptr(uniform_name));
+    }
 
-/// Returns an attribute location by name.
-pub fn get_shader_location_attrib(shader: Shader, attrib_name: &[u8]) i32 {
-    return raw.GetShaderLocationAttrib(shader, z_ptr(attrib_name));
-}
+    /// Returns an attribute location by name.
+    pub fn attrib_location(attrib_name: &[u8]) i32 {
+        return raw.GetShaderLocationAttrib(self, z_ptr(attrib_name));
+    }
 
-/// Sets one uniform value.
-pub fn set_shader_value(
-    shader: Shader,
-    loc_index: i32,
-    value: &mut void,
-    uniform_type: ShaderUniformDataType,
-) void {
-    raw.SetShaderValue(
-        shader,
-        loc_index,
-        value,
-        uniform_type,
-    );
-}
+    /// Sets one uniform value.
+    ///
+    /// Safety:
+    /// `value` must point to data matching `uniform_type`.
+    pub fn set_value(loc_index: i32, value: &mut void, uniform_type: ShaderUniformDataType) Shader {
+        raw.SetShaderValue(
+            self,
+            loc_index,
+            value,
+            uniform_type,
+        );
+        return self;
+    }
 
-/// Sets multiple uniform values.
-pub fn set_shader_value_v(
-    shader: Shader,
-    loc_index: i32,
-    value: &mut void,
-    uniform_type: ShaderUniformDataType,
-    count: i32,
-) void {
-    raw.SetShaderValueV(
-        shader,
-        loc_index,
-        value,
-        uniform_type,
-        count,
-    );
-}
+    /// Sets multiple uniform values.
+    ///
+    /// Safety:
+    /// `value` must point to at least `count` values matching `uniform_type`.
+    pub fn set_values(
+        loc_index: i32,
+        value: &mut void,
+        uniform_type: ShaderUniformDataType,
+        count: i32,
+    ) Shader {
+        raw.SetShaderValueV(
+            self,
+            loc_index,
+            value,
+            uniform_type,
+            count,
+        );
+        return self;
+    }
 
-/// Sets a matrix uniform.
-pub fn set_shader_value_matrix(shader: Shader, loc_index: i32, mat: Matrix) void {
-    raw.SetShaderValueMatrix(shader, loc_index, mat);
-}
+    /// Sets a matrix uniform.
+    pub fn set_matrix(loc_index: i32, mat: Matrix) Shader {
+        raw.SetShaderValueMatrix(self, loc_index, mat);
+        return self;
+    }
 
-/// Sets a texture uniform.
-pub fn set_shader_value_texture(shader: Shader, loc_index: i32, texture: Texture2D) void {
-    raw.SetShaderValueTexture(shader, loc_index, texture);
-}
+    /// Sets a texture uniform.
+    pub fn set_texture(loc_index: i32, texture: Texture2D) Shader {
+        raw.SetShaderValueTexture(self, loc_index, texture);
+        return self;
+    }
 
-/// Releases a shader from GPU memory.
-pub fn unload_shader(shader: Shader) void {
-    raw.UnloadShader(shader);
+    /// Releases this shader from GPU memory.
+    pub fn unload() void {
+        raw.UnloadShader(self);
+    }
 }

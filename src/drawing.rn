@@ -282,768 +282,6 @@ pub fn get_shapes_texture_rectangle() Rectangle {
     return raw.GetShapesTextureRectangle();
 }
 
-/// Draws raylib's debug FPS overlay.
-pub fn draw_fps(x: i32, y: i32) void {
-    raw.DrawFPS(x, y);
-}
-
-/// Draws a single pixel.
-pub fn draw_pixel(x: i32, y: i32, color: Color) void {
-    raw.DrawPixel(x, y, color);
-}
-
-/// Draws a single pixel at a vector screen position.
-pub fn draw_pixel_v(position: Vector2, color: Color) void {
-    raw.DrawPixelV(position, color);
-}
-
-/// Draws a line between two integer screen positions.
-pub fn draw_line(start_x: i32, start_y: i32, end_x: i32, end_y: i32, color: Color) void {
-    raw.DrawLine(
-        start_x,
-        start_y,
-        end_x,
-        end_y,
-        color,
-    );
-}
-
-/// Draws a line between two vector screen positions.
-pub fn draw_line_v(start: Vector2, end: Vector2, color: Color) void {
-    raw.DrawLineV(start, end, color);
-}
-
-/// Draws a thick line between two vector screen positions.
-pub fn draw_line_ex(start: Vector2, end: Vector2, thick: f32, color: Color) void {
-    raw.DrawLineEx(
-        start,
-        end,
-        thick,
-        color,
-    );
-}
-
-/// Draws a connected line strip from `point_count` points.
-pub fn draw_line_strip(points: &mut Vector2, point_count: i32, color: Color) void {
-    raw.DrawLineStrip(points, point_count, color);
-}
-
-/// Draws a cubic-bezier line segment.
-pub fn draw_line_bezier(start: Vector2, end: Vector2, thick: f32, color: Color) void {
-    raw.DrawLineBezier(
-        start,
-        end,
-        thick,
-        color,
-    );
-}
-
-/// Draws a dashed line.
-pub fn draw_line_dashed(
-    start: Vector2,
-    end: Vector2,
-    dash_size: i32,
-    space_size: i32,
-    color: Color,
-) void {
-    raw.DrawLineDashed(
-        start,
-        end,
-        dash_size,
-        space_size,
-        color,
-    );
-}
-
-/// Draws a filled circle.
-pub fn draw_circle(x: i32, y: i32, radius: f32, color: Color) void {
-    raw.DrawCircle(
-        x,
-        y,
-        radius,
-        color,
-    );
-}
-
-/// Draws a filled circle from a vector center.
-pub fn draw_circle_v(center: Vector2, radius: f32, color: Color) void {
-    raw.DrawCircleV(center, radius, color);
-}
-
-/// Draws a filled circle with radial color interpolation.
-pub fn draw_circle_gradient(center: Vector2, radius: f32, inner: Color, outer: Color) void {
-    raw.DrawCircleGradient(
-        center,
-        radius,
-        inner,
-        outer,
-    );
-}
-
-/// Draws a filled sector of a circle.
-pub fn draw_circle_sector(
-    center: Vector2,
-    radius: f32,
-    start_angle: f32,
-    end_angle: f32,
-    segments: i32,
-    color: Color,
-) void {
-    raw.DrawCircleSector(
-        center,
-        radius,
-        start_angle,
-        end_angle,
-        segments,
-        color,
-    );
-}
-
-/// Draws the outline of a circle sector.
-pub fn draw_circle_sector_lines(
-    center: Vector2,
-    radius: f32,
-    start_angle: f32,
-    end_angle: f32,
-    segments: i32,
-    color: Color,
-) void {
-    raw.DrawCircleSectorLines(
-        center,
-        radius,
-        start_angle,
-        end_angle,
-        segments,
-        color,
-    );
-}
-
-/// Draws a circle outline.
-pub fn draw_circle_lines(x: i32, y: i32, radius: f32, color: Color) void {
-    raw.DrawCircleLines(
-        x,
-        y,
-        radius,
-        color,
-    );
-}
-
-/// Draws a circle outline from a vector center.
-pub fn draw_circle_lines_v(center: Vector2, radius: f32, color: Color) void {
-    raw.DrawCircleLinesV(center, radius, color);
-}
-
-/// Draws a filled ellipse.
-pub fn draw_ellipse(x: i32, y: i32, radius_h: f32, radius_v: f32, color: Color) void {
-    raw.DrawEllipse(
-        x,
-        y,
-        radius_h,
-        radius_v,
-        color,
-    );
-}
-
-/// Draws a filled ellipse from a vector center.
-pub fn draw_ellipse_v(center: Vector2, radius_h: f32, radius_v: f32, color: Color) void {
-    raw.DrawEllipseV(
-        center,
-        radius_h,
-        radius_v,
-        color,
-    );
-}
-
-/// Draws an ellipse outline.
-pub fn draw_ellipse_lines(x: i32, y: i32, radius_h: f32, radius_v: f32, color: Color) void {
-    raw.DrawEllipseLines(
-        x,
-        y,
-        radius_h,
-        radius_v,
-        color,
-    );
-}
-
-/// Draws an ellipse outline from a vector center.
-pub fn draw_ellipse_lines_v(center: Vector2, radius_h: f32, radius_v: f32, color: Color) void {
-    raw.DrawEllipseLinesV(
-        center,
-        radius_h,
-        radius_v,
-        color,
-    );
-}
-
-/// Draws a filled ring.
-pub fn draw_ring(
-    center: Vector2,
-    inner_radius: f32,
-    outer_radius: f32,
-    start_angle: f32,
-    end_angle: f32,
-    segments: i32,
-    color: Color,
-) void {
-    raw.DrawRing(
-        center,
-        inner_radius,
-        outer_radius,
-        start_angle,
-        end_angle,
-        segments,
-        color,
-    );
-}
-
-/// Draws a ring outline.
-pub fn draw_ring_lines(
-    center: Vector2,
-    inner_radius: f32,
-    outer_radius: f32,
-    start_angle: f32,
-    end_angle: f32,
-    segments: i32,
-    color: Color,
-) void {
-    raw.DrawRingLines(
-        center,
-        inner_radius,
-        outer_radius,
-        start_angle,
-        end_angle,
-        segments,
-        color,
-    );
-}
-
-/// Draws a filled rectangle.
-pub fn draw_rectangle(x: i32, y: i32, width: i32, height: i32, color: Color) void {
-    raw.DrawRectangle(
-        x,
-        y,
-        width,
-        height,
-        color,
-    );
-}
-
-/// Draws a filled rectangle from vector position and size.
-pub fn draw_rectangle_v(position: Vector2, size: Vector2, color: Color) void {
-    raw.DrawRectangleV(position, size, color);
-}
-
-/// Draws a filled rectangle from a `Rectangle`.
-pub fn draw_rectangle_rec(rect: Rectangle, color: Color) void {
-    raw.DrawRectangleRec(rect, color);
-}
-
-/// Draws a filled rectangle with origin and rotation.
-pub fn draw_rectangle_pro(rect: Rectangle, origin: Vector2, rotation: f32, color: Color) void {
-    raw.DrawRectanglePro(
-        rect,
-        origin,
-        rotation,
-        color,
-    );
-}
-
-/// Draws a vertical-gradient rectangle.
-pub fn draw_rectangle_gradient_v(
-    x: i32,
-    y: i32,
-    width: i32,
-    height: i32,
-    top: Color,
-    bottom: Color,
-) void {
-    raw.DrawRectangleGradientV(
-        x,
-        y,
-        width,
-        height,
-        top,
-        bottom,
-    );
-}
-
-/// Draws a horizontal-gradient rectangle.
-pub fn draw_rectangle_gradient_h(
-    x: i32,
-    y: i32,
-    width: i32,
-    height: i32,
-    left: Color,
-    right: Color,
-) void {
-    raw.DrawRectangleGradientH(
-        x,
-        y,
-        width,
-        height,
-        left,
-        right,
-    );
-}
-
-/// Draws a rectangle with independent corner colors.
-pub fn draw_rectangle_gradient_ex(
-    rect: Rectangle,
-    top_left: Color,
-    bottom_left: Color,
-    bottom_right: Color,
-    top_right: Color,
-) void {
-    raw.DrawRectangleGradientEx(
-        rect,
-        top_left,
-        bottom_left,
-        bottom_right,
-        top_right,
-    );
-}
-
-/// Draws the outline of a rectangle.
-pub fn draw_rectangle_lines(x: i32, y: i32, width: i32, height: i32, color: Color) void {
-    raw.DrawRectangleLines(
-        x,
-        y,
-        width,
-        height,
-        color,
-    );
-}
-
-/// Draws a rectangle outline with configurable thickness.
-pub fn draw_rectangle_lines_ex(rect: Rectangle, line_thick: f32, color: Color) void {
-    raw.DrawRectangleLinesEx(rect, line_thick, color);
-}
-
-/// Draws a filled rounded rectangle.
-pub fn draw_rectangle_rounded(
-    rect: Rectangle,
-    roundness: f32,
-    segments: i32,
-    color: Color,
-) void {
-    raw.DrawRectangleRounded(
-        rect,
-        roundness,
-        segments,
-        color,
-    );
-}
-
-/// Draws a rounded rectangle outline.
-pub fn draw_rectangle_rounded_lines(
-    rect: Rectangle,
-    roundness: f32,
-    segments: i32,
-    color: Color,
-) void {
-    raw.DrawRectangleRoundedLines(
-        rect,
-        roundness,
-        segments,
-        color,
-    );
-}
-
-/// Draws a rounded rectangle outline with configurable thickness.
-pub fn draw_rectangle_rounded_lines_ex(
-    rect: Rectangle,
-    roundness: f32,
-    segments: i32,
-    line_thick: f32,
-    color: Color,
-) void {
-    raw.DrawRectangleRoundedLinesEx(
-        rect,
-        roundness,
-        segments,
-        line_thick,
-        color,
-    );
-}
-
-/// Draws a filled triangle. raylib expects counter-clockwise vertices.
-pub fn draw_triangle(v1: Vector2, v2: Vector2, v3: Vector2, color: Color) void {
-    raw.DrawTriangle(
-        v1,
-        v2,
-        v3,
-        color,
-    );
-}
-
-/// Draws a triangle outline.
-pub fn draw_triangle_lines(v1: Vector2, v2: Vector2, v3: Vector2, color: Color) void {
-    raw.DrawTriangleLines(
-        v1,
-        v2,
-        v3,
-        color,
-    );
-}
-
-/// Draws a triangle fan. The first point is the center.
-pub fn draw_triangle_fan(points: &mut Vector2, point_count: i32, color: Color) void {
-    raw.DrawTriangleFan(points, point_count, color);
-}
-
-/// Draws a triangle strip.
-pub fn draw_triangle_strip(points: &mut Vector2, point_count: i32, color: Color) void {
-    raw.DrawTriangleStrip(points, point_count, color);
-}
-
-/// Draws a regular polygon.
-pub fn draw_poly(center: Vector2, sides: i32, radius: f32, rotation: f32, color: Color) void {
-    raw.DrawPoly(
-        center,
-        sides,
-        radius,
-        rotation,
-        color,
-    );
-}
-
-/// Draws a regular polygon outline.
-pub fn draw_poly_lines(center: Vector2, sides: i32, radius: f32, rotation: f32, color: Color) void {
-    raw.DrawPolyLines(
-        center,
-        sides,
-        radius,
-        rotation,
-        color,
-    );
-}
-
-/// Draws a regular polygon outline with configurable thickness.
-pub fn draw_poly_lines_ex(
-    center: Vector2,
-    sides: i32,
-    radius: f32,
-    rotation: f32,
-    line_thick: f32,
-    color: Color,
-) void {
-    raw.DrawPolyLinesEx(
-        center,
-        sides,
-        radius,
-        rotation,
-        line_thick,
-        color,
-    );
-}
-
-/// Draws a linear spline. Requires at least two points.
-pub fn draw_spline_linear(points: &mut Vector2, point_count: i32, thick: f32, color: Color) void {
-    raw.DrawSplineLinear(
-        points,
-        point_count,
-        thick,
-        color,
-    );
-}
-
-/// Draws a B-spline. Requires at least four points.
-pub fn draw_spline_basis(points: &mut Vector2, point_count: i32, thick: f32, color: Color) void {
-    raw.DrawSplineBasis(
-        points,
-        point_count,
-        thick,
-        color,
-    );
-}
-
-/// Draws a Catmull-Rom spline. Requires at least four points.
-pub fn draw_spline_catmull_rom(
-    points: &mut Vector2,
-    point_count: i32,
-    thick: f32,
-    color: Color,
-) void {
-    raw.DrawSplineCatmullRom(
-        points,
-        point_count,
-        thick,
-        color,
-    );
-}
-
-/// Draws chained quadratic Bezier spline segments.
-pub fn draw_spline_bezier_quadratic(
-    points: &mut Vector2,
-    point_count: i32,
-    thick: f32,
-    color: Color,
-) void {
-    raw.DrawSplineBezierQuadratic(
-        points,
-        point_count,
-        thick,
-        color,
-    );
-}
-
-/// Draws chained cubic Bezier spline segments.
-pub fn draw_spline_bezier_cubic(
-    points: &mut Vector2,
-    point_count: i32,
-    thick: f32,
-    color: Color,
-) void {
-    raw.DrawSplineBezierCubic(
-        points,
-        point_count,
-        thick,
-        color,
-    );
-}
-
-/// Draws one linear spline segment.
-pub fn draw_spline_segment_linear(p1: Vector2, p2: Vector2, thick: f32, color: Color) void {
-    raw.DrawSplineSegmentLinear(
-        p1,
-        p2,
-        thick,
-        color,
-    );
-}
-
-/// Draws one B-spline segment.
-pub fn draw_spline_segment_basis(
-    p1: Vector2,
-    p2: Vector2,
-    p3: Vector2,
-    p4: Vector2,
-    thick: f32,
-    color: Color,
-) void {
-    raw.DrawSplineSegmentBasis(
-        p1,
-        p2,
-        p3,
-        p4,
-        thick,
-        color,
-    );
-}
-
-/// Draws one Catmull-Rom spline segment.
-pub fn draw_spline_segment_catmull_rom(
-    p1: Vector2,
-    p2: Vector2,
-    p3: Vector2,
-    p4: Vector2,
-    thick: f32,
-    color: Color,
-) void {
-    raw.DrawSplineSegmentCatmullRom(
-        p1,
-        p2,
-        p3,
-        p4,
-        thick,
-        color,
-    );
-}
-
-/// Draws one quadratic Bezier segment.
-pub fn draw_spline_segment_bezier_quadratic(
-    p1: Vector2,
-    c2: Vector2,
-    p3: Vector2,
-    thick: f32,
-    color: Color,
-) void {
-    raw.DrawSplineSegmentBezierQuadratic(
-        p1,
-        c2,
-        p3,
-        thick,
-        color,
-    );
-}
-
-/// Draws one cubic Bezier segment.
-pub fn draw_spline_segment_bezier_cubic(
-    p1: Vector2,
-    c2: Vector2,
-    c3: Vector2,
-    p4: Vector2,
-    thick: f32,
-    color: Color,
-) void {
-    raw.DrawSplineSegmentBezierCubic(
-        p1,
-        c2,
-        c3,
-        p4,
-        thick,
-        color,
-    );
-}
-
-/// Evaluates a point on a linear spline segment.
-pub fn get_spline_point_linear(start: Vector2, end: Vector2, t: f32) Vector2 {
-    return raw.GetSplinePointLinear(start, end, t);
-}
-
-/// Evaluates a point on a B-spline segment.
-pub fn get_spline_point_basis(
-    p1: Vector2,
-    p2: Vector2,
-    p3: Vector2,
-    p4: Vector2,
-    t: f32,
-) Vector2 {
-    return raw.GetSplinePointBasis(
-        p1,
-        p2,
-        p3,
-        p4,
-        t,
-    );
-}
-
-/// Evaluates a point on a Catmull-Rom spline segment.
-pub fn get_spline_point_catmull_rom(
-    p1: Vector2,
-    p2: Vector2,
-    p3: Vector2,
-    p4: Vector2,
-    t: f32,
-) Vector2 {
-    return raw.GetSplinePointCatmullRom(
-        p1,
-        p2,
-        p3,
-        p4,
-        t,
-    );
-}
-
-/// Evaluates a point on a quadratic Bezier segment.
-pub fn get_spline_point_bezier_quad(p1: Vector2, c2: Vector2, p3: Vector2, t: f32) Vector2 {
-    return raw.GetSplinePointBezierQuad(
-        p1,
-        c2,
-        p3,
-        t,
-    );
-}
-
-/// Evaluates a point on a cubic Bezier segment.
-pub fn get_spline_point_bezier_cubic(
-    p1: Vector2,
-    c2: Vector2,
-    c3: Vector2,
-    p4: Vector2,
-    t: f32,
-) Vector2 {
-    return raw.GetSplinePointBezierCubic(
-        p1,
-        c2,
-        c3,
-        p4,
-        t,
-    );
-}
-
-/// Checks collision between two rectangles.
-pub fn check_collision_recs(rec1: Rectangle, rec2: Rectangle) bool {
-    return raw.CheckCollisionRecs(rec1, rec2);
-}
-
-/// Checks collision between two circles.
-pub fn check_collision_circles(
-    center1: Vector2,
-    radius1: f32,
-    center2: Vector2,
-    radius2: f32,
-) bool {
-    return raw.CheckCollisionCircles(
-        center1,
-        radius1,
-        center2,
-        radius2,
-    );
-}
-
-/// Checks collision between a circle and a rectangle.
-pub fn check_collision_circle_rec(center: Vector2, radius: f32, rect: Rectangle) bool {
-    return raw.CheckCollisionCircleRec(center, radius, rect);
-}
-
-/// Checks collision between a circle and a line segment.
-pub fn check_collision_circle_line(center: Vector2, radius: f32, p1: Vector2, p2: Vector2) bool {
-    return raw.CheckCollisionCircleLine(
-        center,
-        radius,
-        p1,
-        p2,
-    );
-}
-
-/// Checks whether a point is inside a rectangle.
-pub fn check_collision_point_rec(point: Vector2, rect: Rectangle) bool {
-    return raw.CheckCollisionPointRec(point, rect);
-}
-
-/// Checks whether a point is inside a circle.
-pub fn check_collision_point_circle(point: Vector2, center: Vector2, radius: f32) bool {
-    return raw.CheckCollisionPointCircle(point, center, radius);
-}
-
-/// Checks whether a point is inside a triangle.
-pub fn check_collision_point_triangle(point: Vector2, p1: Vector2, p2: Vector2, p3: Vector2) bool {
-    return raw.CheckCollisionPointTriangle(
-        point,
-        p1,
-        p2,
-        p3,
-    );
-}
-
-/// Checks whether a point is near a line segment within `threshold` pixels.
-pub fn check_collision_point_line(point: Vector2, p1: Vector2, p2: Vector2, threshold: i32) bool {
-    return raw.CheckCollisionPointLine(
-        point,
-        p1,
-        p2,
-        threshold,
-    );
-}
-
-/// Checks whether a point is inside a polygon.
-pub fn check_collision_point_poly(point: Vector2, points: &mut Vector2, point_count: i32) bool {
-    return raw.CheckCollisionPointPoly(point, points, point_count);
-}
-
-/// Checks collision between two line segments and writes the collision point.
-pub fn check_collision_lines(
-    start1: Vector2,
-    end1: Vector2,
-    start2: Vector2,
-    end2: Vector2,
-    collision_point: &mut Vector2,
-) bool {
-    return raw.CheckCollisionLines(
-        start1,
-        end1,
-        start2,
-        end2,
-        collision_point,
-    );
-}
-
-/// Returns the overlap rectangle for two colliding rectangles.
-pub fn get_collision_rec(rec1: Rectangle, rec2: Rectangle) Rectangle {
-    return raw.GetCollisionRec(rec1, rec2);
-}
-
 impl Vector2 {
     /// Draws this point as one screen pixel.
     pub fn draw_pixel(color: Color) void {
@@ -1067,6 +305,231 @@ impl Vector2 {
             end,
             thick,
             color,
+        );
+    }
+
+    /// Draws a cubic-bezier line segment from this point to `end`.
+    pub fn draw_line_bezier_to(end: Vector2, thick: f32, color: Color) void {
+        raw.DrawLineBezier(
+            self,
+            end,
+            thick,
+            color,
+        );
+    }
+
+    /// Draws a dashed line from this point to `end`.
+    pub fn draw_line_dashed_to(end: Vector2, dash_size: i32, space_size: i32, color: Color) void {
+        raw.DrawLineDashed(
+            self,
+            end,
+            dash_size,
+            space_size,
+            color,
+        );
+    }
+
+    /// Draws a filled circle with radial color interpolation.
+    pub fn draw_circle_gradient(radius: f32, inner: Color, outer: Color) void {
+        raw.DrawCircleGradient(
+            self,
+            radius,
+            inner,
+            outer,
+        );
+    }
+
+    /// Draws a filled sector of a circle centered on this point.
+    pub fn draw_circle_sector(
+        radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        segments: i32,
+        color: Color,
+    ) void {
+        raw.DrawCircleSector(
+            self,
+            radius,
+            start_angle,
+            end_angle,
+            segments,
+            color,
+        );
+    }
+
+    /// Draws the outline of a circle sector centered on this point.
+    pub fn draw_circle_sector_lines(
+        radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        segments: i32,
+        color: Color,
+    ) void {
+        raw.DrawCircleSectorLines(
+            self,
+            radius,
+            start_angle,
+            end_angle,
+            segments,
+            color,
+        );
+    }
+
+    /// Draws a circle outline centered on this point.
+    pub fn draw_circle_lines(radius: f32, color: Color) void {
+        raw.DrawCircleLinesV(self, radius, color);
+    }
+
+    /// Draws a filled ellipse centered on this point.
+    pub fn draw_ellipse(radius_h: f32, radius_v: f32, color: Color) void {
+        raw.DrawEllipseV(
+            self,
+            radius_h,
+            radius_v,
+            color,
+        );
+    }
+
+    /// Draws an ellipse outline centered on this point.
+    pub fn draw_ellipse_lines(radius_h: f32, radius_v: f32, color: Color) void {
+        raw.DrawEllipseLinesV(
+            self,
+            radius_h,
+            radius_v,
+            color,
+        );
+    }
+
+    /// Draws a filled ring centered on this point.
+    pub fn draw_ring(
+        inner_radius: f32,
+        outer_radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        segments: i32,
+        color: Color,
+    ) void {
+        raw.DrawRing(
+            self,
+            inner_radius,
+            outer_radius,
+            start_angle,
+            end_angle,
+            segments,
+            color,
+        );
+    }
+
+    /// Draws a ring outline centered on this point.
+    pub fn draw_ring_lines(
+        inner_radius: f32,
+        outer_radius: f32,
+        start_angle: f32,
+        end_angle: f32,
+        segments: i32,
+        color: Color,
+    ) void {
+        raw.DrawRingLines(
+            self,
+            inner_radius,
+            outer_radius,
+            start_angle,
+            end_angle,
+            segments,
+            color,
+        );
+    }
+
+    /// Draws a rectangle from this top-left position and a vector size.
+    pub fn draw_rect(size: Vector2, color: Color) void {
+        raw.DrawRectangleV(self, size, color);
+    }
+
+    /// Draws a regular polygon centered on this point.
+    pub fn draw_poly(sides: i32, radius: f32, rotation: f32, color: Color) void {
+        raw.DrawPoly(
+            self,
+            sides,
+            radius,
+            rotation,
+            color,
+        );
+    }
+
+    /// Draws a regular polygon outline centered on this point.
+    pub fn draw_poly_lines(sides: i32, radius: f32, rotation: f32, color: Color) void {
+        raw.DrawPolyLines(
+            self,
+            sides,
+            radius,
+            rotation,
+            color,
+        );
+    }
+
+    /// Draws a regular polygon outline with configurable thickness.
+    pub fn draw_poly_lines_ex(
+        sides: i32,
+        radius: f32,
+        rotation: f32,
+        line_thick: f32,
+        color: Color,
+    ) void {
+        raw.DrawPolyLinesEx(
+            self,
+            sides,
+            radius,
+            rotation,
+            line_thick,
+            color,
+        );
+    }
+
+    /// Evaluates a point on a linear spline segment from this point to `end`.
+    pub fn spline_linear_to(end: Vector2, t: f32) Vector2 {
+        return raw.GetSplinePointLinear(self, end, t);
+    }
+
+    /// Evaluates a point on a B-spline segment with this point as `p1`.
+    pub fn spline_basis(p2: Vector2, p3: Vector2, p4: Vector2, t: f32) Vector2 {
+        return raw.GetSplinePointBasis(
+            self,
+            p2,
+            p3,
+            p4,
+            t,
+        );
+    }
+
+    /// Evaluates a point on a Catmull-Rom segment with this point as `p1`.
+    pub fn spline_catmull_rom(p2: Vector2, p3: Vector2, p4: Vector2, t: f32) Vector2 {
+        return raw.GetSplinePointCatmullRom(
+            self,
+            p2,
+            p3,
+            p4,
+            t,
+        );
+    }
+
+    /// Evaluates a point on a quadratic Bezier segment from this point.
+    pub fn spline_bezier_quad(c2: Vector2, p3: Vector2, t: f32) Vector2 {
+        return raw.GetSplinePointBezierQuad(
+            self,
+            c2,
+            p3,
+            t,
+        );
+    }
+
+    /// Evaluates a point on a cubic Bezier segment from this point.
+    pub fn spline_bezier_cubic(c2: Vector2, c3: Vector2, p4: Vector2, t: f32) Vector2 {
+        return raw.GetSplinePointBezierCubic(
+            self,
+            c2,
+            c3,
+            p4,
+            t,
         );
     }
 
@@ -1099,12 +562,74 @@ impl Vector2 {
             threshold,
         );
     }
+
+    /// Returns true when this point is inside a polygon.
+    pub fn inside_poly(points: &mut Vector2, point_count: i32) bool {
+        return raw.CheckCollisionPointPoly(self, points, point_count);
+    }
+
+    /// Returns true when two line segments collide and writes the collision point.
+    pub fn line_intersection(
+        end: Vector2,
+        other_start: Vector2,
+        other_end: Vector2,
+        collision_point: &mut Vector2,
+    ) bool {
+        return raw.CheckCollisionLines(
+            self,
+            end,
+            other_start,
+            other_end,
+            collision_point,
+        );
+    }
+
+    /// Returns true when this circle overlaps another circle.
+    pub fn circle_overlaps(radius: f32, other_center: Vector2, other_radius: f32) bool {
+        return raw.CheckCollisionCircles(
+            self,
+            radius,
+            other_center,
+            other_radius,
+        );
+    }
+
+    /// Returns true when this circle overlaps a rectangle.
+    pub fn circle_overlaps_rect(radius: f32, rect: Rectangle) bool {
+        return raw.CheckCollisionCircleRec(self, radius, rect);
+    }
+
+    /// Returns true when this circle overlaps a line segment.
+    pub fn circle_overlaps_line(radius: f32, p1: Vector2, p2: Vector2) bool {
+        return raw.CheckCollisionCircleLine(
+            self,
+            radius,
+            p1,
+            p2,
+        );
+    }
 }
 
 impl Rectangle {
     /// Draws this rectangle filled with `color`.
     pub fn draw(color: Color) void {
         raw.DrawRectangleRec(self, color);
+    }
+
+    /// Draws this rectangle with independent corner colors.
+    pub fn draw_gradient(
+        top_left: Color,
+        bottom_left: Color,
+        bottom_right: Color,
+        top_right: Color,
+    ) void {
+        raw.DrawRectangleGradientEx(
+            self,
+            top_left,
+            bottom_left,
+            bottom_right,
+            top_right,
+        );
     }
 
     /// Draws this rectangle around `origin` with rotation.
@@ -1120,6 +645,42 @@ impl Rectangle {
     /// Draws this rectangle's outline.
     pub fn draw_lines(thick: f32, color: Color) void {
         raw.DrawRectangleLinesEx(self, thick, color);
+    }
+
+    /// Draws this rectangle with rounded corners.
+    pub fn draw_rounded(roundness: f32, segments: i32, color: Color) void {
+        raw.DrawRectangleRounded(
+            self,
+            roundness,
+            segments,
+            color,
+        );
+    }
+
+    /// Draws this rectangle's rounded outline.
+    pub fn draw_rounded_lines(roundness: f32, segments: i32, color: Color) void {
+        raw.DrawRectangleRoundedLines(
+            self,
+            roundness,
+            segments,
+            color,
+        );
+    }
+
+    /// Draws this rectangle's rounded outline with configurable thickness.
+    pub fn draw_rounded_lines_ex(
+        roundness: f32,
+        segments: i32,
+        line_thick: f32,
+        color: Color,
+    ) void {
+        raw.DrawRectangleRoundedLinesEx(
+            self,
+            roundness,
+            segments,
+            line_thick,
+            color,
+        );
     }
 
     /// Returns true when this rectangle overlaps `other`.
@@ -1140,5 +701,75 @@ impl Rectangle {
     /// Returns true when the circle overlaps this rectangle.
     pub fn overlaps_circle(center: Vector2, radius: f32) bool {
         return raw.CheckCollisionCircleRec(center, radius, self);
+    }
+}
+
+impl &mut Vector2 {
+    /// Draws a connected line strip from this point array.
+    ///
+    /// Safety:
+    /// `self` must point to at least `point_count` contiguous `Vector2` values.
+    pub fn draw_line_strip(point_count: i32, color: Color) void {
+        raw.DrawLineStrip(self, point_count, color);
+    }
+
+    /// Draws a triangle fan from this point array.
+    pub fn draw_triangle_fan(point_count: i32, color: Color) void {
+        raw.DrawTriangleFan(self, point_count, color);
+    }
+
+    /// Draws a triangle strip from this point array.
+    pub fn draw_triangle_strip(point_count: i32, color: Color) void {
+        raw.DrawTriangleStrip(self, point_count, color);
+    }
+
+    /// Draws a linear spline through this point array.
+    pub fn draw_spline_linear(point_count: i32, thick: f32, color: Color) void {
+        raw.DrawSplineLinear(
+            self,
+            point_count,
+            thick,
+            color,
+        );
+    }
+
+    /// Draws a B-spline through this point array.
+    pub fn draw_spline_basis(point_count: i32, thick: f32, color: Color) void {
+        raw.DrawSplineBasis(
+            self,
+            point_count,
+            thick,
+            color,
+        );
+    }
+
+    /// Draws a Catmull-Rom spline through this point array.
+    pub fn draw_spline_catmull_rom(point_count: i32, thick: f32, color: Color) void {
+        raw.DrawSplineCatmullRom(
+            self,
+            point_count,
+            thick,
+            color,
+        );
+    }
+
+    /// Draws chained quadratic Bezier spline segments through this point array.
+    pub fn draw_spline_bezier_quadratic(point_count: i32, thick: f32, color: Color) void {
+        raw.DrawSplineBezierQuadratic(
+            self,
+            point_count,
+            thick,
+            color,
+        );
+    }
+
+    /// Draws chained cubic Bezier spline segments through this point array.
+    pub fn draw_spline_bezier_cubic(point_count: i32, thick: f32, color: Color) void {
+        raw.DrawSplineBezierCubic(
+            self,
+            point_count,
+            thick,
+            color,
+        );
     }
 }
