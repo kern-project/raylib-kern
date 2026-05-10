@@ -197,16 +197,6 @@ pub use .input.{
     get_mouse_delta,
 };
 
-pub use .textures.{
-    load_texture,
-    load_texture_from_image,
-    unload_texture,
-    draw_texture,
-    draw_texture_v,
-    draw_texture_ex,
-    draw_texture_rec,
-};
-
 pub use .text.{
     draw_text,
     draw_text_ex,

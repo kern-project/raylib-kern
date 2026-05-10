@@ -13,14 +13,17 @@ through Craft instead of requiring a system `libraylib`.
 The public API is hand-maintained and organized by raylib domain:
 
 - `raylib`: root prelude for the first-window path, common types, colors, and
-  frequently used helpers.
+  immediate drawing/input helpers.
 - `raylib.window`, `raylib.input`, `raylib.drawing`, `raylib.images`,
   `raylib.textures`, `raylib.text`, `raylib.shaders`, `raylib.models`,
   `raylib.audio`, `raylib.files`, and `raylib.automation`: focused modules for
   the complete Kern-facing wrappers in each area.
 
 `src/raw.rn` is generated as the direct C ABI layer. It is package-internal and
-only used by the public modules.
+only used by the public modules. Resource behavior is exposed on the resource
+values themselves: load or generate through the domain module, then call methods
+such as `texture.draw_at(...)`, `image.resize(...)`, `sound.play()`, and
+`music.update()`.
 
 ## Requirements
 
@@ -150,22 +153,34 @@ const LOGO = "resources/raylib_logo.png\0";
 raylib.init_window(800, 450, "textures\0");
 defer raylib.close_window();
 
-let logo = raylib.load_texture(LOGO);
-defer raylib.unload_texture(logo);
+let logo = raylib.textures.load_texture(LOGO)..&;
+defer logo.unload();
+
+while (!raylib.window_should_close()) {
+    raylib.begin_drawing();
+        raylib.clear_background(raylib.RAYWHITE);
+        logo.draw_at(raylib.vector2(40.0, 40.0), raylib.WHITE);
+    raylib.end_drawing();
+}
 ```
 
 For CPU-side image editing, use `raylib.images`. A common flow is:
 
 ```kern
-let image = raylib.images.load_image(LOGO);
-defer raylib.images.unload_image(image);
+let image = raylib.images.load_image(LOGO)..&;
+defer image.unload();
 
-let texture = raylib.textures.load_texture_from_image(image);
-defer raylib.textures.unload_texture(texture);
+image.flip_vertical();
+image.draw_text("loaded from an image\0", 8, 8, 18, raylib.BLACK);
+
+let texture = image.to_texture();
+defer texture.unload();
 ```
 
-The root `raylib.load_texture()` helper is kept for the common direct-to-GPU
-case, but the module paths are the stable place to look for the full API.
+The module path answers where a resource comes from; the resource value answers
+what can be done with it. That keeps texture and image code close to Kern's
+handle style instead of repeating `raylib.textures.*` or `raylib.images.*` for
+every operation.
 
 ## Audio
 
@@ -176,21 +191,39 @@ audio resources, and close it after owned resources are unloaded.
 raylib.audio.init_audio_device();
 defer raylib.audio.close_audio_device();
 
-let sound = raylib.audio.load_sound("resources/click.wav\0");
-defer raylib.audio.unload_sound(sound);
+let sound = raylib.audio.load_sound("resources/click.wav\0")..&;
+defer sound.unload();
 
-raylib.audio.play_sound(sound);
+sound.set_volume(0.8);
+sound.play();
 ```
 
 Use `Sound` for short effects. Use `Music` for longer streams, and call
-`raylib.audio.update_music_stream(music)` once per frame while the music is
-playing.
+`music.update()` once per frame while the music is playing:
+
+```kern
+let music = raylib.audio.load_music_stream("resources/theme.ogg\0")..&;
+defer music.unload();
+
+music.play();
+while (!raylib.window_should_close()) {
+    music.update();
+    // Update and draw the frame.
+}
+```
 
 ## Colors
 
 raylib's named colors are exposed as `pub const` values such as
 `raylib.RAYWHITE` and `raylib.DARKGRAY`. They rely on Kern's `const`
 compile-time semantics and must not lower to linkable global storage.
+
+Color transforms are available as value methods:
+
+```kern
+let overlay = raylib.BLUE.alpha(0.5);
+let warning = raylib.YELLOW.lerp(raylib.RED, 0.35);
+```
 
 ## Binding Generation
 

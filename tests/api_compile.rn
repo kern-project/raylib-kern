@@ -93,7 +93,7 @@ fn use_input_api() void {
 
 // Touches texture functions without requiring the test to load a real asset.
 fn use_texture_api() void {
-    let tex = raylib.load_texture(TEXTURE_PATH);
+    let tex = raylib.textures.load_texture(TEXTURE_PATH)..&;
     let pos = raylib.vector2(0.0, 0.0);
     let src = raylib.rectangle(
         0.0,
@@ -101,27 +101,17 @@ fn use_texture_api() void {
         16.0,
         16.0,
     );
-    raylib.draw_texture(
-        tex,
-        0,
-        0,
-        raylib.WHITE,
-    );
-    raylib.draw_texture_v(tex, pos, raylib.WHITE);
-    raylib.draw_texture_ex(
-        tex,
+    tex.draw(0, 0, raylib.WHITE);
+    tex.draw_at(pos, raylib.WHITE);
+    tex.draw_ex(
         pos,
         0.0,
         1.0,
         raylib.WHITE,
     );
-    raylib.draw_texture_rec(
-        tex,
-        src,
-        pos,
-        raylib.WHITE,
-    );
-    raylib.unload_texture(tex);
+    tex.draw_rec(src, pos, raylib.WHITE);
+    tex.gen_mipmaps();
+    tex.unload();
 }
 
 // Touches module paths so the focused public modules remain part of the API.
@@ -133,26 +123,35 @@ fn use_module_api() void {
         16.0,
     );
     let pos = raylib.vector2(0.0, 0.0);
-    let color = raylib.colors.color_alpha(raylib.WHITE, 0.5);
-    let image = raylib.images.gen_image_color(16, 16, color);
-    _ = raylib.images.is_image_valid(image);
-    let tex = raylib.textures.load_texture_from_image(image);
-    _ = raylib.textures.is_texture_valid(tex);
-    raylib.textures.draw_texture_rec(
-        tex,
-        rec,
-        pos,
-        raylib.WHITE,
+    let color = raylib.WHITE.alpha(0.5);
+    let image = raylib.images.gen_image_color(16, 16, color)..&;
+    _ = image.is_valid();
+    image.flip_vertical();
+    image.draw_text(
+        TEXT,
+        1,
+        1,
+        8,
+        raylib.BLACK,
     );
+    let tex = image.to_texture();
+    _ = tex.is_valid();
+    tex.draw_rec(rec, pos, raylib.WHITE);
     _ = raylib.text.measure_text(TEXT, 20);
     _ = raylib.input.get_mouse_position();
     _ = raylib.files.file_exists(TEXTURE_PATH);
-    raylib.textures.unload_texture(tex);
-    raylib.images.unload_image(image);
+    tex.unload();
+    image.unload();
 
     raylib.audio.init_audio_device();
     _ = raylib.audio.is_audio_device_ready();
     raylib.audio.set_master_volume(1.0);
+    let sound = raylib.audio.load_sound("missing.wav\0")..&;
+    _ = sound.is_valid();
+    sound.set_volume(0.5);
+    sound.play();
+    sound.stop();
+    sound.unload();
     raylib.audio.close_audio_device();
 }
 

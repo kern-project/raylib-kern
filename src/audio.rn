@@ -5,9 +5,9 @@
 //! `Music`, and `AudioStream` you own has been unloaded.
 //!
 //! Short sound effects are usually loaded as `Sound` and played with
-//! `play_sound()`. Longer tracks use `Music`; a playing music stream must be
-//! ticked once per frame with `update_music_stream()` so raylib can keep feeding
-//! the backend. `AudioStream` is the lower-level API for generated PCM data.
+//! `sound.play()`. Longer tracks use `Music`; a playing music stream must be
+//! ticked once per frame with `music.update()` so raylib can keep feeding the
+//! backend. `AudioStream` is the lower-level API for generated PCM data.
 
 use ..raw;
 use ..internal.z_ptr;
@@ -59,56 +59,7 @@ pub fn load_wave_from_memory(file_type: &[u8], file_data: &u8, data_size: i32) W
     return raw.LoadWaveFromMemory(z_ptr(file_type), file_data, data_size);
 }
 
-/// Returns true when the wave has loaded data and valid format parameters.
-pub fn is_wave_valid(wave: Wave) bool {
-    return raw.IsWaveValid(wave);
-}
-
-/// Releases CPU-side wave data.
-pub fn unload_wave(wave: Wave) void {
-    raw.UnloadWave(wave);
-}
-
-/// Writes wave data to a zero-terminated file path.
-pub fn export_wave(wave: Wave, file_name: &[u8]) bool {
-    return raw.ExportWave(wave, z_ptr(file_name));
-}
-
-/// Writes wave sample data as generated C code.
-pub fn export_wave_as_code(wave: Wave, file_name: &[u8]) bool {
-    return raw.ExportWaveAsCode(wave, z_ptr(file_name));
-}
-
-/// Copies a wave into newly owned wave data.
-pub fn wave_copy(wave: Wave) Wave {
-    return raw.WaveCopy(wave);
-}
-
-/// Crops a wave to the frame range `[init_frame, final_frame)`.
-pub fn wave_crop(wave: &mut Wave, init_frame: i32, final_frame: i32) void {
-    raw.WaveCrop(wave, init_frame, final_frame);
-}
-
-/// Converts wave data in place to the requested sample rate, sample size, and
-/// channel count.
-pub fn wave_format(wave: &mut Wave, sample_rate: i32, sample_size: i32, channels: i32) void {
-    raw.WaveFormat(
-        wave,
-        sample_rate,
-        sample_size,
-        channels,
-    );
-}
-
-/// Loads a `f32` sample array from a wave.
-///
-/// The returned pointer is owned by raylib and must be released with
-/// `unload_wave_samples()`.
-pub fn load_wave_samples(wave: Wave) &mut f32 {
-    return raw.LoadWaveSamples(wave);
-}
-
-/// Releases samples returned by `load_wave_samples()`.
+/// Releases samples returned by `Wave.samples()`.
 pub fn unload_wave_samples(samples: &mut f32) void {
     raw.UnloadWaveSamples(samples);
 }
@@ -118,84 +69,9 @@ pub fn load_sound(file_name: &[u8]) Sound {
     return raw.LoadSound(z_ptr(file_name));
 }
 
-/// Creates a sound effect from wave data.
-pub fn load_sound_from_wave(wave: Wave) Sound {
-    return raw.LoadSoundFromWave(wave);
-}
-
-/// Creates a sound handle that shares sample data with `source`.
-///
-/// An alias does not own the sample data. Release it with `unload_sound_alias()`
-/// and keep the source sound alive while aliases exist.
-pub fn load_sound_alias(source: Sound) Sound {
-    return raw.LoadSoundAlias(source);
-}
-
-/// Returns true when the sound has loaded buffers.
-pub fn is_sound_valid(sound: Sound) bool {
-    return raw.IsSoundValid(sound);
-}
-
-/// Updates the sound buffer with raw sample data.
-///
-/// raylib expects the default sound data format here: 32-bit float, stereo.
-pub fn update_sound(sound: Sound, data: &mut void, sample_count: i32) void {
-    raw.UpdateSound(sound, data, sample_count);
-}
-
-/// Releases a sound and its owned sample data.
-pub fn unload_sound(sound: Sound) void {
-    raw.UnloadSound(sound);
-}
-
-/// Releases a sound alias without freeing shared sample data.
-pub fn unload_sound_alias(alias: Sound) void {
-    raw.UnloadSoundAlias(alias);
-}
-
-/// Starts playback of a sound effect.
-pub fn play_sound(sound: Sound) void {
-    raw.PlaySound(sound);
-}
-
-/// Stops playback of a sound effect.
-pub fn stop_sound(sound: Sound) void {
-    raw.StopSound(sound);
-}
-
-/// Pauses playback of a sound effect.
-pub fn pause_sound(sound: Sound) void {
-    raw.PauseSound(sound);
-}
-
-/// Resumes a paused sound effect.
-pub fn resume_sound(sound: Sound) void {
-    raw.ResumeSound(sound);
-}
-
-/// Returns true while a sound effect is playing.
-pub fn is_sound_playing(sound: Sound) bool {
-    return raw.IsSoundPlaying(sound);
-}
-
-/// Sets per-sound volume. `1.0` is normal full volume.
-pub fn set_sound_volume(sound: Sound, volume: f32) void {
-    raw.SetSoundVolume(sound, volume);
-}
-
-/// Sets per-sound pitch. `1.0` is the original pitch.
-pub fn set_sound_pitch(sound: Sound, pitch: f32) void {
-    raw.SetSoundPitch(sound, pitch);
-}
-
-/// Sets per-sound stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
-pub fn set_sound_pan(sound: Sound, pan: f32) void {
-    raw.SetSoundPan(sound, pan);
-}
-
 /// Loads streamed music from a zero-terminated file path.
 ///
-/// Call `play_music_stream()` once, then call `update_music_stream()` each frame
+/// Call `music.play()` once, then call `music.update()` each frame
 /// while the music is active.
 pub fn load_music_stream(file_name: &[u8]) Music {
     return raw.LoadMusicStream(z_ptr(file_name));
@@ -207,145 +83,514 @@ pub fn load_music_stream_from_memory(file_type: &[u8], data: &u8, data_size: i32
     return raw.LoadMusicStreamFromMemory(z_ptr(file_type), data, data_size);
 }
 
-/// Returns true when a music stream has valid buffers.
-pub fn is_music_valid(music: Music) bool {
-    return raw.IsMusicValid(music);
-}
-
-/// Releases a music stream.
-pub fn unload_music_stream(music: Music) void {
-    raw.UnloadMusicStream(music);
-}
-
-/// Starts playback of a music stream.
-pub fn play_music_stream(music: Music) void {
-    raw.PlayMusicStream(music);
-}
-
-/// Returns true while a music stream is playing.
-pub fn is_music_stream_playing(music: Music) bool {
-    return raw.IsMusicStreamPlaying(music);
-}
-
-/// Feeds a playing music stream.
-///
-/// Put this in the frame loop update phase. Without it, long music streams can
-/// run out of buffered data even though playback was started correctly.
-pub fn update_music_stream(music: Music) void {
-    raw.UpdateMusicStream(music);
-}
-
-/// Stops music playback and rewinds the stream.
-pub fn stop_music_stream(music: Music) void {
-    raw.StopMusicStream(music);
-}
-
-/// Pauses music playback.
-pub fn pause_music_stream(music: Music) void {
-    raw.PauseMusicStream(music);
-}
-
-/// Resumes paused music playback.
-pub fn resume_music_stream(music: Music) void {
-    raw.ResumeMusicStream(music);
-}
-
-/// Seeks music playback to `position` seconds.
-pub fn seek_music_stream(music: Music, position: f32) void {
-    raw.SeekMusicStream(music, position);
-}
-
-/// Sets music volume. `1.0` is normal full volume.
-pub fn set_music_volume(music: Music, volume: f32) void {
-    raw.SetMusicVolume(music, volume);
-}
-
-/// Sets music pitch. `1.0` is the original pitch.
-pub fn set_music_pitch(music: Music, pitch: f32) void {
-    raw.SetMusicPitch(music, pitch);
-}
-
-/// Sets music stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
-pub fn set_music_pan(music: Music, pan: f32) void {
-    raw.SetMusicPan(music, pan);
-}
-
-/// Returns the music duration in seconds.
-pub fn get_music_time_length(music: Music) f32 {
-    return raw.GetMusicTimeLength(music);
-}
-
-/// Returns the current music playback position in seconds.
-pub fn get_music_time_played(music: Music) f32 {
-    return raw.GetMusicTimePlayed(music);
-}
-
 /// Creates a raw PCM audio stream.
 pub fn load_audio_stream(sample_rate: u32, sample_size: u32, channels: u32) AudioStream {
     return raw.LoadAudioStream(sample_rate, sample_size, channels);
 }
 
-/// Returns true when an audio stream has initialized buffers.
-pub fn is_audio_stream_valid(stream: AudioStream) bool {
-    return raw.IsAudioStreamValid(stream);
-}
-
-/// Releases an audio stream and its buffers.
-pub fn unload_audio_stream(stream: AudioStream) void {
-    raw.UnloadAudioStream(stream);
-}
-
-/// Uploads audio frames into a stream buffer.
-pub fn update_audio_stream(stream: AudioStream, data: &mut void, frame_count: i32) void {
-    raw.UpdateAudioStream(stream, data, frame_count);
-}
-
-/// Returns true when a stream buffer is ready for more data.
-pub fn is_audio_stream_processed(stream: AudioStream) bool {
-    return raw.IsAudioStreamProcessed(stream);
-}
-
-/// Starts playback of an audio stream.
-pub fn play_audio_stream(stream: AudioStream) void {
-    raw.PlayAudioStream(stream);
-}
-
-/// Pauses playback of an audio stream.
-pub fn pause_audio_stream(stream: AudioStream) void {
-    raw.PauseAudioStream(stream);
-}
-
-/// Resumes playback of an audio stream.
-pub fn resume_audio_stream(stream: AudioStream) void {
-    raw.ResumeAudioStream(stream);
-}
-
-/// Returns true while an audio stream is playing.
-pub fn is_audio_stream_playing(stream: AudioStream) bool {
-    return raw.IsAudioStreamPlaying(stream);
-}
-
-/// Stops playback of an audio stream.
-pub fn stop_audio_stream(stream: AudioStream) void {
-    raw.StopAudioStream(stream);
-}
-
-/// Sets stream volume. `1.0` is normal full volume.
-pub fn set_audio_stream_volume(stream: AudioStream, volume: f32) void {
-    raw.SetAudioStreamVolume(stream, volume);
-}
-
-/// Sets stream pitch. `1.0` is the original pitch.
-pub fn set_audio_stream_pitch(stream: AudioStream, pitch: f32) void {
-    raw.SetAudioStreamPitch(stream, pitch);
-}
-
-/// Sets stream stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
-pub fn set_audio_stream_pan(stream: AudioStream, pan: f32) void {
-    raw.SetAudioStreamPan(stream, pan);
-}
-
 /// Sets the default buffer size for newly created audio streams.
 pub fn set_audio_stream_buffer_size_default(size: i32) void {
     raw.SetAudioStreamBufferSizeDefault(size);
+}
+
+impl Wave {
+    /// Returns true when this wave has loaded data and valid format parameters.
+    pub fn is_valid() bool {
+        return raw.IsWaveValid(self);
+    }
+
+    /// Releases this wave's CPU-side sample data.
+    pub fn unload() void {
+        raw.UnloadWave(self);
+    }
+
+    /// Writes this wave to a zero-terminated file path.
+    pub fn export(file_name: &[u8]) bool {
+        return raw.ExportWave(self, z_ptr(file_name));
+    }
+
+    /// Writes this wave's sample data as generated C code.
+    pub fn export_as_code(file_name: &[u8]) bool {
+        return raw.ExportWaveAsCode(self, z_ptr(file_name));
+    }
+
+    /// Copies this wave into newly owned wave data.
+    pub fn copy() Wave {
+        return raw.WaveCopy(self);
+    }
+
+    /// Loads a `f32` sample array from this wave.
+    ///
+    /// The returned pointer is owned by raylib and must be released with
+    /// `unload_wave_samples()`.
+    pub fn samples() &mut f32 {
+        return raw.LoadWaveSamples(self);
+    }
+
+    /// Creates a sound effect from this wave's sample data.
+    pub fn to_sound() Sound {
+        return raw.LoadSoundFromWave(self);
+    }
+}
+
+impl &mut Wave {
+    /// Returns true when this wave has loaded data and valid format parameters.
+    pub fn is_valid() bool {
+        return raw.IsWaveValid(self.*);
+    }
+
+    /// Releases this wave's CPU-side sample data.
+    pub fn unload() void {
+        raw.UnloadWave(self.*);
+    }
+
+    /// Writes this wave to a zero-terminated file path.
+    pub fn export(file_name: &[u8]) bool {
+        return raw.ExportWave(self.*, z_ptr(file_name));
+    }
+
+    /// Writes this wave's sample data as generated C code.
+    pub fn export_as_code(file_name: &[u8]) bool {
+        return raw.ExportWaveAsCode(self.*, z_ptr(file_name));
+    }
+
+    /// Copies this wave into newly owned wave data.
+    pub fn copy() Wave {
+        return raw.WaveCopy(self.*);
+    }
+
+    /// Loads a `f32` sample array from this wave.
+    pub fn samples() &mut f32 {
+        return raw.LoadWaveSamples(self.*);
+    }
+
+    /// Creates a sound effect from this wave's sample data.
+    pub fn to_sound() Sound {
+        return raw.LoadSoundFromWave(self.*);
+    }
+
+    /// Crops this wave to the frame range `[init_frame, final_frame)`.
+    pub fn crop(init_frame: i32, final_frame: i32) void {
+        raw.WaveCrop(self, init_frame, final_frame);
+    }
+
+    /// Converts this wave to the requested sample rate, sample size, and channels.
+    pub fn format(sample_rate: i32, sample_size: i32, channels: i32) void {
+        raw.WaveFormat(
+            self,
+            sample_rate,
+            sample_size,
+            channels,
+        );
+    }
+}
+
+impl Sound {
+    /// Returns true when this sound has loaded buffers.
+    pub fn is_valid() bool {
+        return raw.IsSoundValid(self);
+    }
+
+    /// Updates this sound buffer with raw sample data.
+    ///
+    /// raylib expects the default sound data format here: 32-bit float, stereo.
+    pub fn update(data: &mut void, sample_count: i32) void {
+        raw.UpdateSound(self, data, sample_count);
+    }
+
+    /// Creates a sound handle that shares this sound's sample data.
+    ///
+    /// An alias does not own the sample data. Release it with `unload_alias()`
+    /// and keep the source sound alive while aliases exist.
+    pub fn alias() Sound {
+        return raw.LoadSoundAlias(self);
+    }
+
+    /// Releases this sound and its owned sample data.
+    pub fn unload() void {
+        raw.UnloadSound(self);
+    }
+
+    /// Releases this sound alias without freeing shared sample data.
+    pub fn unload_alias() void {
+        raw.UnloadSoundAlias(self);
+    }
+
+    /// Starts playback of this sound effect.
+    pub fn play() void {
+        raw.PlaySound(self);
+    }
+
+    /// Stops playback of this sound effect.
+    pub fn stop() void {
+        raw.StopSound(self);
+    }
+
+    /// Pauses playback of this sound effect.
+    pub fn pause() void {
+        raw.PauseSound(self);
+    }
+
+    /// Resumes a paused sound effect.
+    pub fn resume() void {
+        raw.ResumeSound(self);
+    }
+
+    /// Returns true while this sound effect is playing.
+    pub fn is_playing() bool {
+        return raw.IsSoundPlaying(self);
+    }
+
+    /// Sets per-sound volume. `1.0` is normal full volume.
+    pub fn set_volume(volume: f32) void {
+        raw.SetSoundVolume(self, volume);
+    }
+
+    /// Sets per-sound pitch. `1.0` is the original pitch.
+    pub fn set_pitch(pitch: f32) void {
+        raw.SetSoundPitch(self, pitch);
+    }
+
+    /// Sets per-sound stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
+    pub fn set_pan(pan: f32) void {
+        raw.SetSoundPan(self, pan);
+    }
+}
+
+impl &mut Sound {
+    /// Returns true when this sound has loaded buffers.
+    pub fn is_valid() bool {
+        return raw.IsSoundValid(self.*);
+    }
+
+    /// Updates this sound buffer with raw sample data.
+    pub fn update(data: &mut void, sample_count: i32) void {
+        raw.UpdateSound(self.*, data, sample_count);
+    }
+
+    /// Creates a sound handle that shares this sound's sample data.
+    pub fn alias() Sound {
+        return raw.LoadSoundAlias(self.*);
+    }
+
+    /// Releases this sound and its owned sample data.
+    pub fn unload() void {
+        raw.UnloadSound(self.*);
+    }
+
+    /// Releases this sound alias without freeing shared sample data.
+    pub fn unload_alias() void {
+        raw.UnloadSoundAlias(self.*);
+    }
+
+    /// Starts playback of this sound effect.
+    pub fn play() void {
+        raw.PlaySound(self.*);
+    }
+
+    /// Stops playback of this sound effect.
+    pub fn stop() void {
+        raw.StopSound(self.*);
+    }
+
+    /// Pauses playback of this sound effect.
+    pub fn pause() void {
+        raw.PauseSound(self.*);
+    }
+
+    /// Resumes a paused sound effect.
+    pub fn resume() void {
+        raw.ResumeSound(self.*);
+    }
+
+    /// Returns true while this sound effect is playing.
+    pub fn is_playing() bool {
+        return raw.IsSoundPlaying(self.*);
+    }
+
+    /// Sets per-sound volume. `1.0` is normal full volume.
+    pub fn set_volume(volume: f32) void {
+        raw.SetSoundVolume(self.*, volume);
+    }
+
+    /// Sets per-sound pitch. `1.0` is the original pitch.
+    pub fn set_pitch(pitch: f32) void {
+        raw.SetSoundPitch(self.*, pitch);
+    }
+
+    /// Sets per-sound stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
+    pub fn set_pan(pan: f32) void {
+        raw.SetSoundPan(self.*, pan);
+    }
+}
+
+impl Music {
+    /// Returns true when this music stream has valid buffers.
+    pub fn is_valid() bool {
+        return raw.IsMusicValid(self);
+    }
+
+    /// Releases this music stream.
+    pub fn unload() void {
+        raw.UnloadMusicStream(self);
+    }
+
+    /// Starts playback of this music stream.
+    pub fn play() void {
+        raw.PlayMusicStream(self);
+    }
+
+    /// Returns true while this music stream is playing.
+    pub fn is_playing() bool {
+        return raw.IsMusicStreamPlaying(self);
+    }
+
+    /// Feeds this playing music stream.
+    ///
+    /// Put this in the frame loop update phase. Without it, long music streams
+    /// can run out of buffered data even though playback was started correctly.
+    pub fn update() void {
+        raw.UpdateMusicStream(self);
+    }
+
+    /// Stops music playback and rewinds the stream.
+    pub fn stop() void {
+        raw.StopMusicStream(self);
+    }
+
+    /// Pauses music playback.
+    pub fn pause() void {
+        raw.PauseMusicStream(self);
+    }
+
+    /// Resumes paused music playback.
+    pub fn resume() void {
+        raw.ResumeMusicStream(self);
+    }
+
+    /// Seeks music playback to `position` seconds.
+    pub fn seek(position: f32) void {
+        raw.SeekMusicStream(self, position);
+    }
+
+    /// Sets music volume. `1.0` is normal full volume.
+    pub fn set_volume(volume: f32) void {
+        raw.SetMusicVolume(self, volume);
+    }
+
+    /// Sets music pitch. `1.0` is the original pitch.
+    pub fn set_pitch(pitch: f32) void {
+        raw.SetMusicPitch(self, pitch);
+    }
+
+    /// Sets music stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
+    pub fn set_pan(pan: f32) void {
+        raw.SetMusicPan(self, pan);
+    }
+
+    /// Returns the music duration in seconds.
+    pub fn time_length() f32 {
+        return raw.GetMusicTimeLength(self);
+    }
+
+    /// Returns the current music playback position in seconds.
+    pub fn time_played() f32 {
+        return raw.GetMusicTimePlayed(self);
+    }
+}
+
+impl &mut Music {
+    /// Returns true when this music stream has valid buffers.
+    pub fn is_valid() bool {
+        return raw.IsMusicValid(self.*);
+    }
+
+    /// Releases this music stream.
+    pub fn unload() void {
+        raw.UnloadMusicStream(self.*);
+    }
+
+    /// Starts playback of this music stream.
+    pub fn play() void {
+        raw.PlayMusicStream(self.*);
+    }
+
+    /// Returns true while this music stream is playing.
+    pub fn is_playing() bool {
+        return raw.IsMusicStreamPlaying(self.*);
+    }
+
+    /// Feeds this playing music stream.
+    pub fn update() void {
+        raw.UpdateMusicStream(self.*);
+    }
+
+    /// Stops music playback and rewinds the stream.
+    pub fn stop() void {
+        raw.StopMusicStream(self.*);
+    }
+
+    /// Pauses music playback.
+    pub fn pause() void {
+        raw.PauseMusicStream(self.*);
+    }
+
+    /// Resumes paused music playback.
+    pub fn resume() void {
+        raw.ResumeMusicStream(self.*);
+    }
+
+    /// Seeks music playback to `position` seconds.
+    pub fn seek(position: f32) void {
+        raw.SeekMusicStream(self.*, position);
+    }
+
+    /// Sets music volume. `1.0` is normal full volume.
+    pub fn set_volume(volume: f32) void {
+        raw.SetMusicVolume(self.*, volume);
+    }
+
+    /// Sets music pitch. `1.0` is the original pitch.
+    pub fn set_pitch(pitch: f32) void {
+        raw.SetMusicPitch(self.*, pitch);
+    }
+
+    /// Sets music stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
+    pub fn set_pan(pan: f32) void {
+        raw.SetMusicPan(self.*, pan);
+    }
+
+    /// Returns the music duration in seconds.
+    pub fn time_length() f32 {
+        return raw.GetMusicTimeLength(self.*);
+    }
+
+    /// Returns the current music playback position in seconds.
+    pub fn time_played() f32 {
+        return raw.GetMusicTimePlayed(self.*);
+    }
+}
+
+impl AudioStream {
+    /// Returns true when this audio stream has initialized buffers.
+    pub fn is_valid() bool {
+        return raw.IsAudioStreamValid(self);
+    }
+
+    /// Releases this audio stream and its buffers.
+    pub fn unload() void {
+        raw.UnloadAudioStream(self);
+    }
+
+    /// Uploads audio frames into this stream buffer.
+    pub fn update(data: &mut void, frame_count: i32) void {
+        raw.UpdateAudioStream(self, data, frame_count);
+    }
+
+    /// Returns true when this stream buffer is ready for more data.
+    pub fn is_processed() bool {
+        return raw.IsAudioStreamProcessed(self);
+    }
+
+    /// Starts playback of this audio stream.
+    pub fn play() void {
+        raw.PlayAudioStream(self);
+    }
+
+    /// Pauses playback of this audio stream.
+    pub fn pause() void {
+        raw.PauseAudioStream(self);
+    }
+
+    /// Resumes playback of this audio stream.
+    pub fn resume() void {
+        raw.ResumeAudioStream(self);
+    }
+
+    /// Returns true while this audio stream is playing.
+    pub fn is_playing() bool {
+        return raw.IsAudioStreamPlaying(self);
+    }
+
+    /// Stops playback of this audio stream.
+    pub fn stop() void {
+        raw.StopAudioStream(self);
+    }
+
+    /// Sets stream volume. `1.0` is normal full volume.
+    pub fn set_volume(volume: f32) void {
+        raw.SetAudioStreamVolume(self, volume);
+    }
+
+    /// Sets stream pitch. `1.0` is the original pitch.
+    pub fn set_pitch(pitch: f32) void {
+        raw.SetAudioStreamPitch(self, pitch);
+    }
+
+    /// Sets stream stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
+    pub fn set_pan(pan: f32) void {
+        raw.SetAudioStreamPan(self, pan);
+    }
+}
+
+impl &mut AudioStream {
+    /// Returns true when this audio stream has initialized buffers.
+    pub fn is_valid() bool {
+        return raw.IsAudioStreamValid(self.*);
+    }
+
+    /// Releases this audio stream and its buffers.
+    pub fn unload() void {
+        raw.UnloadAudioStream(self.*);
+    }
+
+    /// Uploads audio frames into this stream buffer.
+    pub fn update(data: &mut void, frame_count: i32) void {
+        raw.UpdateAudioStream(self.*, data, frame_count);
+    }
+
+    /// Returns true when this stream buffer is ready for more data.
+    pub fn is_processed() bool {
+        return raw.IsAudioStreamProcessed(self.*);
+    }
+
+    /// Starts playback of this audio stream.
+    pub fn play() void {
+        raw.PlayAudioStream(self.*);
+    }
+
+    /// Pauses playback of this audio stream.
+    pub fn pause() void {
+        raw.PauseAudioStream(self.*);
+    }
+
+    /// Resumes playback of this audio stream.
+    pub fn resume() void {
+        raw.ResumeAudioStream(self.*);
+    }
+
+    /// Returns true while this audio stream is playing.
+    pub fn is_playing() bool {
+        return raw.IsAudioStreamPlaying(self.*);
+    }
+
+    /// Stops playback of this audio stream.
+    pub fn stop() void {
+        raw.StopAudioStream(self.*);
+    }
+
+    /// Sets stream volume. `1.0` is normal full volume.
+    pub fn set_volume(volume: f32) void {
+        raw.SetAudioStreamVolume(self.*, volume);
+    }
+
+    /// Sets stream pitch. `1.0` is the original pitch.
+    pub fn set_pitch(pitch: f32) void {
+        raw.SetAudioStreamPitch(self.*, pitch);
+    }
+
+    /// Sets stream stereo pan. `-1.0` is left, `0.0` is center, and `1.0` is right.
+    pub fn set_pan(pan: f32) void {
+        raw.SetAudioStreamPan(self.*, pan);
+    }
 }

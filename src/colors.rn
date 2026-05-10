@@ -121,3 +121,60 @@ pub fn set_pixel_color(dst_ptr: &mut void, color: Color, format: i32) void {
 pub fn get_pixel_data_size(width: i32, height: i32, format: i32) i32 {
     return raw.GetPixelDataSize(width, height, format);
 }
+
+impl Color {
+    /// Returns true when this color has identical channels to `other`.
+    pub fn eq(other: Color) bool {
+        return raw.ColorIsEqual(self, other);
+    }
+
+    /// Applies alpha to this color.
+    pub fn fade(alpha: f32) Color {
+        return raw.Fade(self, alpha);
+    }
+
+    /// Packs this color into raylib's integer representation.
+    pub fn to_int() i32 {
+        return raw.ColorToInt(self);
+    }
+
+    /// Converts this color's channels to normalized floats.
+    pub fn normalize() Vector4 {
+        return raw.ColorNormalize(self);
+    }
+
+    /// Converts this RGB color to HSV.
+    pub fn to_hsv() Vector3 {
+        return raw.ColorToHSV(self);
+    }
+
+    /// Tints this color with another color.
+    pub fn tint(tint: Color) Color {
+        return raw.ColorTint(self, tint);
+    }
+
+    /// Adjusts this color's brightness.
+    pub fn brightness(factor: f32) Color {
+        return raw.ColorBrightness(self, factor);
+    }
+
+    /// Adjusts this color's contrast.
+    pub fn contrast(contrast: f32) Color {
+        return raw.ColorContrast(self, contrast);
+    }
+
+    /// Replaces this color's alpha channel.
+    pub fn alpha(alpha: f32) Color {
+        return raw.ColorAlpha(self, alpha);
+    }
+
+    /// Alpha-blends `src` over this color and applies a tint.
+    pub fn alpha_blend(src: Color, tint: Color) Color {
+        return raw.ColorAlphaBlend(self, src, tint);
+    }
+
+    /// Linearly interpolates from this color toward `other`.
+    pub fn lerp(other: Color, factor: f32) Color {
+        return raw.ColorLerp(self, other, factor);
+    }
+}
