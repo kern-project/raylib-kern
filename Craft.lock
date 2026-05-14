@@ -41,12 +41,3 @@ source = "git"
 source-value = "https://github.com/raysan5/raylib.git"
 source-locator = "https://github.com/raysan5/raylib.git"
 source-selector = "tag:6.0"
-
-[[publish-proof]]
-package-id = "raylib 0.1.0 root"
-package = "raylib"
-version = "0.1.0"
-kern = "0.7.6"
-repository = "https://github.com/softfault/raylib-kern.git"
-manifest-sha256 = "sha256:658a1df03579f9e992f030aa91967476654201fefac8b7b9c99f55c4c1a58d94"
-source-sha256 = "sha256:eb0c7fc85e1364555f3460aa39040e85fe86513e5acde4a967629e5316b350b7"
