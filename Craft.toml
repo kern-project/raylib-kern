@@ -6,7 +6,7 @@ description = "Kern wrapper for raylib"
 readme = "README.md"
 license = "MIT"
 authors = ["softfault <givenyoung46@gmail.com>"]
-repository = "https://github.com/softfault/raylib-kern.git"
+repository = "https://github.com/kern-project/raylib-kern.git"
 
 [lib]
 root = "src/lib.kn"
