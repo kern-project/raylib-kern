@@ -1,7 +1,7 @@
 [package]
 name = "raylib"
 version = "0.1.0"
-kern = "0.7.7"
+kern = "0.8"
 description = "Kern wrapper for raylib"
 readme = "README.md"
 license = "MIT"
